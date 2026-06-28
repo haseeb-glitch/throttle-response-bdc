@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback } from 'react'
 import { leadsApi } from '../api/leads'
 import LeadCard from '../components/LeadCard'
 import AddLeadModal from '../components/AddLeadModal'
+import Sidebar from '../components/Sidebar'
 import { timeAgo } from '../utils/helpers'
-import { Users, AlertCircle, Flame, BarChart2, LayoutDashboard, Calendar, Settings, MessageSquare, Plus } from 'lucide-react'
+import { Users, AlertCircle, Flame, BarChart2, Plus } from 'lucide-react'
 
 const POLL_INTERVAL = 30000
 
@@ -89,9 +90,10 @@ export default function Dashboard() {
     return true
   })
 
-  const priorityCount = leads.filter(l => l.priority).length
-  const hotCount = leads.filter(l => l.score >= 75).length
-  const avgScore = leads.length ? Math.round(leads.reduce((s, l) => s + (l.score ?? 0), 0) / leads.length) : 0
+  const priorityCount       = leads.filter(l => l.priority).length
+  const hotCount             = leads.filter(l => l.score >= 75).length
+  const avgScore             = leads.length ? Math.round(leads.reduce((s, l) => s + (l.score ?? 0), 0) / leads.length) : 0
+  const manualTakeoverCount  = leads.filter(l => l.manualTakeover).length
 
   const FILTERS = [
     { key: 'all', label: 'All Leads' },
@@ -159,29 +161,7 @@ export default function Dashboard() {
       <div style={{ display: 'flex', minHeight: 'calc(100vh - 70px)', position: 'relative', zIndex: 1 }}>
         
         {/* Left Sidebar */}
-        <aside style={{
-          width: 260, borderRight: '1px solid #E5E7EB', background: '#FFFFFF',
-          padding: '32px 16px', display: 'flex', flexDirection: 'column', gap: 4,
-          flexShrink: 0
-        }} className="hidden lg:flex">
-          <p style={{ fontSize: 10, fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.1em', marginLeft: 14, marginBottom: 8 }}>Menu</p>
-          <div className="sidebar-item active">
-            <LayoutDashboard size={18} /> Dashboard
-          </div>
-          <div className="sidebar-item">
-            <Users size={18} /> All Leads
-          </div>
-          <div className="sidebar-item">
-            <Calendar size={18} /> Appointments
-          </div>
-          <p style={{ fontSize: 10, fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.1em', marginLeft: 14, marginTop: 24, marginBottom: 8 }}>AI Settings</p>
-          <div className="sidebar-item">
-            <Settings size={18} /> Persona config
-          </div>
-          <div className="sidebar-item">
-            <MessageSquare size={18} /> SMS Integration
-          </div>
-        </aside>
+        <Sidebar priorityCount={priorityCount} manualTakeoverCount={manualTakeoverCount} />
 
         {/* Main Content */}
         <main style={{ flex: 1, padding: '32px', minWidth: 0 }}>

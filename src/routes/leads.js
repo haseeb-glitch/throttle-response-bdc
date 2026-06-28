@@ -37,6 +37,7 @@ module.exports = function(leads) {
       scoreBreakdown: {},
       lastAiAction: null,
       nextFollowUp: null,
+      manualTakeover: false,
       conversation: [],
       createdAt: new Date().toISOString(),
       lastContactTime: new Date().toISOString()
@@ -50,8 +51,9 @@ module.exports = function(leads) {
       });
 
       const canRespond = await shouldRespond();
+      const isHumanInControl = lead.manualTakeover;
 
-      if (canRespond) {
+      if (canRespond && !isHumanInControl) {
         try {
           const delay = await getFirstResponseDelay();
           const aiResponse = await generateResponse(lead.conversation, lead);
@@ -83,6 +85,8 @@ module.exports = function(leads) {
         } catch (err) {
           console.error('AI response error:', err.message);
         }
+      } else if (isHumanInControl) {
+        lead.lastAiAction = 'Manual takeover active — Jake is paused for this lead.';
       } else {
         lead.lastAiAction = 'Outside operating hours — response scheduled for 10:00 AM';
         lead.nextFollowUp = '10:00 AM next morning';
@@ -115,8 +119,9 @@ module.exports = function(leads) {
     });
 
     const canRespond = await shouldRespond();
+    const isHumanInControl = lead.manualTakeover;
 
-    if (canRespond) {
+    if (canRespond && !isHumanInControl) {
       try {
         const aiResponse = await generateResponse(lead.conversation, lead);
 
@@ -148,6 +153,14 @@ module.exports = function(leads) {
         console.error('AI response error:', err.message);
         res.status(500).json({ success: false, message: 'AI response failed' });
       }
+    } else if (isHumanInControl) {
+      res.json({
+        success: true,
+        aiResponse: null,
+        message: 'Manual takeover active — Jake is paused',
+        manualTakeover: true,
+        lead
+      });
     } else {
       res.json({
         success: true,
@@ -156,6 +169,22 @@ module.exports = function(leads) {
         lead
       });
     }
+  });
+
+  // Toggle manual takeover on/off
+  router.patch('/:id/takeover', (req, res) => {
+    const lead = leads.find(l => l.id === req.params.id);
+    if (!lead) return res.status(404).json({ success: false, message: 'Lead not found' });
+
+    lead.manualTakeover = !lead.manualTakeover;
+
+    if (lead.manualTakeover) {
+      lead.lastAiAction = 'Manual takeover active — Jake is paused.';
+    } else {
+      lead.lastAiAction = 'Jake resumed — AI responding again.';
+    }
+
+    res.json({ success: true, manualTakeover: lead.manualTakeover, lead });
   });
 
   return router;

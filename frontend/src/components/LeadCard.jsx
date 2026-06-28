@@ -1,6 +1,6 @@
 import { getScoreStyle, timeAgo, catStyle } from '../utils/helpers'
 import { useNavigate } from 'react-router-dom'
-import { Bike, Calendar } from 'lucide-react'
+import { Bike, Calendar, PauseCircle } from 'lucide-react'
 
 export default function LeadCard({ lead, index }) {
   const navigate = useNavigate()
@@ -25,6 +25,11 @@ export default function LeadCard({ lead, index }) {
               {lead.priority && (
                 <span className="badge" style={{ background: 'transparent', color: '#EF4444', border: '1px solid #FCA5A5', fontSize: 11, borderRadius: 99, padding: '2px 8px' }}>
                   Priority
+                </span>
+              )}
+              {lead.manualTakeover && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#FFFBEB', color: '#D97706', border: '1px solid #FDE68A', fontSize: 11, borderRadius: 99, padding: '2px 8px', fontWeight: 500 }}>
+                  <PauseCircle size={11} /> Jake Paused
                 </span>
               )}
             </div>
@@ -91,7 +96,7 @@ export default function LeadCard({ lead, index }) {
         {/* ── Footer: time + follow-up ── */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#10B981', flexShrink: 0 }} />
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: lead.manualTakeover ? '#F59E0B' : '#10B981', flexShrink: 0 }} />
             <span style={{ fontSize: 12, color: '#6B7280' }}>{timeAgo(lead.lastContactTime)}</span>
           </div>
           {lead.nextFollowUp && (

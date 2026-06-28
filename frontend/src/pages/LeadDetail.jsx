@@ -5,7 +5,7 @@ import ScoreGauge from '../components/ScoreGauge'
 import ScoreBreakdown from '../components/ScoreBreakdown'
 import ConversationHistory from '../components/ConversationHistory'
 import { catStyle, timeAgo } from '../utils/helpers'
-import { Phone, Mail, Bike, Calendar, ArrowLeft, AlertCircle } from 'lucide-react'
+import { Phone, Mail, Bike, Calendar, ArrowLeft, AlertCircle, PauseCircle, PlayCircle } from 'lucide-react'
 
 function Section({ title, children }) {
   return (
@@ -42,8 +42,21 @@ export default function LeadDetail() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [message, setMessage] = useState('')
-  const [sending, setSending] = useState(false)
+  const [sending, setSending]   = useState(false)
   const [sendError, setSendError] = useState(null)
+  const [toggling, setToggling]   = useState(false)
+
+  const handleToggleTakeover = async () => {
+    setToggling(true)
+    try {
+      const res = await leadsApi.toggleTakeover(lead.id)
+      setLead(res.data.lead)
+    } catch (err) {
+      console.error('Takeover toggle failed:', err)
+    } finally {
+      setToggling(false)
+    }
+  }
 
 
 
@@ -133,8 +146,40 @@ export default function LeadDetail() {
               Priority
             </span>
           )}
+
+          {/* Manual Takeover Toggle */}
+          <button
+            onClick={handleToggleTakeover}
+            disabled={toggling}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              padding: '7px 14px', borderRadius: 6, cursor: 'pointer',
+              fontSize: 13, fontWeight: 500,
+              border: lead.manualTakeover ? '1px solid #FDE68A' : '1px solid #E5E7EB',
+              background: lead.manualTakeover ? '#FFFBEB' : '#F9FAFB',
+              color: lead.manualTakeover ? '#D97706' : '#374151',
+              transition: 'all 0.15s',
+            }}
+          >
+            {lead.manualTakeover
+              ? <><PlayCircle size={15} /> Resume Jake</>           
+              : <><PauseCircle size={15} /> Take Over</>}
+          </button>
         </div>
       </header>
+
+      {/* Takeover active banner */}
+      {lead.manualTakeover && (
+        <div style={{
+          background: '#FFFBEB', borderBottom: '1px solid #FDE68A',
+          padding: '10px 24px', display: 'flex', alignItems: 'center', gap: 8
+        }}>
+          <PauseCircle size={15} color="#D97706" />
+          <span style={{ fontSize: 13, fontWeight: 500, color: '#92400E' }}>
+            You are in control — Jake will not respond to this lead until you resume.
+          </span>
+        </div>
+      )}
 
       <main style={{ maxWidth: 1000, margin: '0 auto', padding: '24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24, alignItems: 'start' }}>
         
