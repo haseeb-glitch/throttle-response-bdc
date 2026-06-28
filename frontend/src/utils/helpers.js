@@ -2,12 +2,11 @@
  * Returns score style info for a 0–99 buying probability score.
  */
 export function getScoreStyle(score) {
-  if (score >= 90) return { bg: '#22C55E', text: '#fff', label: 'Elite Buyer',        cls: 'score-elite'    }
-  if (score >= 75) return { bg: '#EF4444', text: '#fff', label: 'High Probability',   cls: 'score-high'     }
-  if (score >= 60) return { bg: '#F97316', text: '#fff', label: 'Strong Buyer',       cls: 'score-strong'   }
-  if (score >= 40) return { bg: '#EAB308', text: '#000', label: 'Qualified Prospect', cls: 'score-prospect' }
-  if (score >= 20) return { bg: '#3B82F6', text: '#fff', label: 'Casual Shopper',     cls: 'score-casual'   }
-  return            { bg: '#94A3B8', text: '#fff', label: 'Very Low',           cls: 'score-low'      }
+  if (score >= 75) return { color: '#10B981', border: '#10B981', label: 'High Probability',   cls: 'score-high'     }
+  if (score >= 60) return { color: '#10B981', border: '#10B981', label: 'Strong Buyer',       cls: 'score-strong'   }
+  if (score >= 40) return { color: '#F59E0B', border: '#F59E0B', label: 'Qualified Prospect', cls: 'score-prospect' }
+  if (score >= 20) return { color: '#6B7280', border: '#6B7280', label: 'Casual Shopper',     cls: 'score-casual'   }
+  return            { color: '#6B7280', border: '#6B7280', label: 'Very Low',           cls: 'score-low'      }
 }
 
 /** Relative time string */
@@ -33,8 +32,8 @@ export function formatTime(iso) {
 
 /** Buying-signal category pill styles */
 export const catStyle = {
-  Transaction: { bg: 'rgba(239,68,68,0.10)',  border: 'rgba(239,68,68,0.25)',  color: '#EF4444' },
-  Timeline:    { bg: 'rgba(249,115,22,0.10)', border: 'rgba(249,115,22,0.25)', color: '#F97316' },
-  Product:     { bg: 'rgba(99,102,241,0.10)', border: 'rgba(99,102,241,0.25)', color: '#6366F1' },
-  Engagement:  { bg: 'rgba(168,85,247,0.10)', border: 'rgba(168,85,247,0.25)', color: '#A855F7' },
+  Transaction: { color: '#6B7280', border: '#D1D5DB' },
+  Timeline:    { color: '#6B7280', border: '#D1D5DB' },
+  Product:     { color: '#6B7280', border: '#D1D5DB' },
+  Engagement:  { color: '#6B7280', border: '#D1D5DB' },
 }

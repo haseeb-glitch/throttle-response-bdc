@@ -5,11 +5,12 @@ import ScoreGauge from '../components/ScoreGauge'
 import ScoreBreakdown from '../components/ScoreBreakdown'
 import ConversationHistory from '../components/ConversationHistory'
 import { catStyle, timeAgo } from '../utils/helpers'
+import { Phone, Mail, Bike, Calendar, ArrowLeft, AlertCircle } from 'lucide-react'
 
 function Section({ title, children }) {
   return (
     <div className="card" style={{ padding: 24, marginBottom: 20 }}>
-      <h3 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: 20 }}>
+      <h3 style={{ fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6B7280', marginBottom: 20 }}>
         {title}
       </h3>
       {children}
@@ -17,16 +18,16 @@ function Section({ title, children }) {
   )
 }
 
-function InfoRow({ label, value, icon }) {
+function InfoRow({ label, value, icon: Icon }) {
   if (!value) return null
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
-      <span style={{ fontSize: 18, marginTop: 2 }}>{icon}</span>
+      <Icon size={16} color="#6B7280" style={{ marginTop: 2 }} />
       <div style={{ minWidth: 0 }}>
-        <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>
+        <p style={{ fontSize: 11, fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2 }}>
           {label}
         </p>
-        <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', wordBreak: 'break-all' }}>
+        <p style={{ fontSize: 14, fontWeight: 500, color: '#111827', wordBreak: 'break-all' }}>
           {value}
         </p>
       </div>
@@ -44,14 +45,7 @@ export default function LeadDetail() {
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState(null)
 
-  const [isDark, setIsDark] = useState(() => document.documentElement.getAttribute('data-theme') === 'dark')
-  
-  const toggleTheme = () => {
-    const next = !isDark
-    setIsDark(next)
-    if (next) document.documentElement.setAttribute('data-theme', 'dark')
-    else document.documentElement.removeAttribute('data-theme')
-  }
+
 
   useEffect(() => {
     const fetch = async () => {
@@ -85,7 +79,7 @@ export default function LeadDetail() {
 
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
-      <div style={{ width: 40, height: 40, borderRadius: '50%', border: '3px solid var(--border)', borderTopColor: '#6366F1', animation: 'spin 1s linear infinite' }} />
+      <div style={{ width: 40, height: 40, borderRadius: '50%', border: '3px solid var(--border)', borderTopColor: '#4F46E5', animation: 'spin 1s linear infinite' }} />
     </div>
   )
 
@@ -100,12 +94,12 @@ export default function LeadDetail() {
     <>
       <header style={{
         position: 'sticky', top: 0, zIndex: 40,
-        background: 'var(--bg-header)', backdropFilter: 'blur(12px)',
-        borderBottom: '1px solid var(--border)', boxShadow: 'var(--shadow-header)'
+        background: '#FFFFFF',
+        borderBottom: '1px solid #E5E7EB',
       }}>
         <div style={{ maxWidth: 1000, margin: '0 auto', padding: '16px 24px', display: 'flex', alignItems: 'center', gap: 16 }}>
-          <button onClick={() => navigate('/')} className="btn-ghost" style={{ padding: '6px 12px', border: 'none' }}>
-            ← Back
+          <button onClick={() => navigate('/')} className="btn-ghost" style={{ padding: '6px 12px', border: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <ArrowLeft size={16} /> Back
           </button>
           
           <div style={{ width: 1, height: 24, background: 'var(--border)' }} />
@@ -113,35 +107,30 @@ export default function LeadDetail() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
             <div style={{
               width: 36, height: 36, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #6366F1, #8B5CF6)',
+              background: '#F3F4F6',
+              border: '1px solid #D1D5DB',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#fff', fontWeight: 700, fontSize: 16, flexShrink: 0
+              color: '#111827', fontWeight: 600, fontSize: 15, flexShrink: 0
             }}>
               {lead.name?.[0]?.toUpperCase() || '?'}
             </div>
             <div style={{ minWidth: 0 }}>
-              <h1 style={{ fontWeight: 700, fontSize: 18, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.1 }}>
+              <h1 style={{ fontWeight: 600, fontSize: 18, color: '#111827', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.1 }}>
                 {lead.name}
               </h1>
               {lead.bikeInterest && (
-                <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  🏍️ {lead.bikeInterest}
+                <p style={{ fontSize: 12, color: '#6B7280', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <Bike size={14} /> {lead.bikeInterest}
                 </p>
               )}
             </div>
           </div>
 
-          <button onClick={toggleTheme} className="btn-ghost" style={{ padding: '8px 10px', border: 'none' }} title="Toggle Dark Mode">
-            {isDark ? '☀️' : '🌙'}
-          </button>
+
 
           {lead.priority && (
-             <span className="badge" style={{ background: 'rgba(239,68,68,0.1)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.25)', padding: '6px 12px' }}>
-             <span style={{ position:'relative', display:'inline-flex', width:8, height:8, marginRight: 4 }}>
-                <span style={{ position:'absolute', inset:0, borderRadius:'50%', background:'#EF4444', opacity:0.6, animation:'ping-dot 1.4s cubic-bezier(0,0,0.2,1) infinite' }} />
-                <span style={{ position:'relative', width:8, height:8, borderRadius:'50%', background:'#EF4444', display:'block' }} />
-              </span>
-              Needs Attention
+             <span className="badge" style={{ background: 'transparent', color: '#EF4444', border: '1px solid #FCA5A5', padding: '4px 12px', borderRadius: 99, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+              Priority
             </span>
           )}
         </div>
@@ -154,7 +143,7 @@ export default function LeadDetail() {
           <Section title="Buying Probability">
             <div style={{ padding: '16px 0', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <ScoreGauge score={lead.score ?? 0} />
-              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 24 }}>
+              <p style={{ fontSize: 12, color: '#6B7280', marginTop: 24 }}>
                 Last contact {timeAgo(lead.lastContactTime)}
               </p>
             </div>
@@ -166,10 +155,10 @@ export default function LeadDetail() {
 
           <Section title="Customer Info">
             <div style={{ borderTop: '1px solid var(--border)' }}>
-              <InfoRow label="Phone" value={lead.phone} icon="📱" />
-              <InfoRow label="Email" value={lead.email} icon="✉️" />
-              <InfoRow label="Bike Interest" value={lead.bikeInterest} icon="🏍️" />
-              {lead.nextFollowUp && <InfoRow label="Next Follow-up" value={lead.nextFollowUp} icon="📅" />}
+              <InfoRow label="Phone" value={lead.phone} icon={Phone} />
+              <InfoRow label="Email" value={lead.email} icon={Mail} />
+              <InfoRow label="Bike Interest" value={lead.bikeInterest} icon={Bike} />
+              {lead.nextFollowUp && <InfoRow label="Next Follow-up" value={lead.nextFollowUp} icon={Calendar} />}
             </div>
           </Section>
         </div>
@@ -183,7 +172,7 @@ export default function LeadDetail() {
                 {lead.buyingSignals.map((sig, i) => {
                   const c = catStyle[sig.category] || catStyle.Engagement
                   return (
-                    <span key={i} className="badge" style={{ background: c.bg, color: c.color, border: `1px solid ${c.border}`, padding: '4px 12px' }}>
+                    <span key={i} className="badge" style={{ background: 'transparent', color: c.color, border: `1px solid ${c.border}`, padding: '4px 12px', borderRadius: 99 }}>
                       <span style={{ opacity: 0.7, marginRight: 4 }}>{sig.category}:</span> {sig.signal}
                     </span>
                   )
@@ -193,13 +182,13 @@ export default function LeadDetail() {
           )}
 
           {lead.priority && lead.priorityReasons?.length > 0 && (
-            <div className="card" style={{ padding: 24, marginBottom: 20, background: 'rgba(239,68,68,0.05)', borderColor: 'rgba(239,68,68,0.2)' }}>
-              <h3 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#EF4444', marginBottom: 12 }}>
-                ⚠️ Priority — Human Intervention Needed
-              </h3>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            <div style={{ padding: 16, marginBottom: 20, background: '#FEF2F2', borderLeft: '3px solid #EF4444', borderRadius: 4, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: '#EF4444', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <AlertCircle size={16} /> Human Intervention Needed
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                 {lead.priorityReasons.map((r, i) => (
-                  <span key={i} className="badge" style={{ background: 'rgba(239,68,68,0.1)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.3)', padding: '4px 12px' }}>
+                  <span key={i} style={{ fontSize: 12, color: '#EF4444', background: '#FEE2E2', border: '1px solid #FCA5A5', padding: '2px 8px', borderRadius: 4 }}>
                     {r}
                   </span>
                 ))}

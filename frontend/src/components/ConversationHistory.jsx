@@ -1,10 +1,13 @@
 import { formatTime } from '../utils/helpers'
+import { MessageSquare } from 'lucide-react'
 
 export default function ConversationHistory({ conversation = [] }) {
   if (!conversation.length) {
     return (
       <div style={{ textAlign: 'center', padding: '32px 0' }}>
-        <div style={{ fontSize: 36, marginBottom: 8 }}>💬</div>
+        <div style={{ color: '#D1D5DB', marginBottom: 12, display: 'flex', justifyContent: 'center' }}>
+          <MessageSquare size={32} />
+        </div>
         <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>No messages yet</p>
       </div>
     )
@@ -20,11 +23,12 @@ export default function ConversationHistory({ conversation = [] }) {
             <div style={{
               flexShrink: 0, width: 32, height: 32, borderRadius: '50%',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontWeight: 700, fontSize: 13,
-              background: isUser ? 'rgba(99,102,241,0.12)' : 'linear-gradient(135deg,#6366F1,#8B5CF6)',
-              color: isUser ? '#6366F1' : '#fff',
+              fontWeight: 600, fontSize: 13,
+              background: isUser ? '#F3F4F6' : '#E5E7EB',
+              color: isUser ? '#4B5563' : '#111827',
+              border: '1px solid #D1D5DB'
             }}>
-              {isUser ? 'C' : 'J'}
+              {isUser ? 'C' : 'AI'}
             </div>
 
             <div style={{ maxWidth: '75%' }}>
@@ -35,7 +39,7 @@ export default function ConversationHistory({ conversation = [] }) {
                 fontSize: 11, color: 'var(--text-muted)', marginTop: 4,
                 textAlign: isUser ? 'left' : 'right'
               }}>
-                {isUser ? 'Customer' : '⚡ Jake'} · {formatTime(msg.timestamp)}
+                {isUser ? 'Customer' : 'AI Assistant'} · {formatTime(msg.timestamp)}
               </p>
             </div>
           </div>

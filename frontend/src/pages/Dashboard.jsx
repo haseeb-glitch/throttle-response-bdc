@@ -2,25 +2,22 @@ import { useState, useEffect, useCallback } from 'react'
 import { leadsApi } from '../api/leads'
 import LeadCard from '../components/LeadCard'
 import AddLeadModal from '../components/AddLeadModal'
-import { getScoreStyle, timeAgo } from '../utils/helpers'
+import { timeAgo } from '../utils/helpers'
+import { Users, AlertCircle, Flame, BarChart2, LayoutDashboard, Calendar, Settings, MessageSquare, Plus } from 'lucide-react'
 
 const POLL_INTERVAL = 30000
 
-function StatCard({ label, value, color, icon }) {
+function StatCard({ label, value, icon: Icon }) {
   return (
-    <div className="card" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16 }}>
-      <div style={{
-        width: 44, height: 44, borderRadius: 12, background: `${color}15`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 22, flexShrink: 0
-      }}>
-        {icon}
-      </div>
-      <div>
-        <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+    <div className="card" style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <p style={{ fontSize: 11, fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
           {label}
         </p>
-        <p style={{ fontSize: 26, fontWeight: 800, color, fontFamily: "'Rajdhani', sans-serif", lineHeight: 1.1, marginTop: 2 }}>
+        <Icon size={18} color="#6B7280" strokeWidth={2} />
+      </div>
+      <div>
+        <p style={{ fontSize: 28, fontWeight: 700, color: '#111827', lineHeight: 1 }}>
           {value}
         </p>
       </div>
@@ -33,15 +30,18 @@ function SkeletonCard() {
     <div className="card" style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <div className="skeleton" style={{ height: 20, width: 140 }} />
-        <div className="skeleton" style={{ height: 60, width: 60, borderRadius: 12 }} />
+        <div className="skeleton" style={{ height: 20, width: 60, borderRadius: 99 }} />
       </div>
       <div className="skeleton" style={{ height: 16, width: 80 }} />
       <div style={{ display: 'flex', gap: 8 }}>
-        <div className="skeleton" style={{ height: 24, width: 100, borderRadius: 99 }} />
-        <div className="skeleton" style={{ height: 24, width: 80, borderRadius: 99 }} />
+        <div className="skeleton" style={{ height: 20, width: 80, borderRadius: 99 }} />
+        <div className="skeleton" style={{ height: 20, width: 80, borderRadius: 99 }} />
       </div>
-      <div className="skeleton" style={{ height: 64, width: '100%', borderRadius: 10 }} />
-      <div className="skeleton" style={{ height: 14, width: 120 }} />
+      <div className="skeleton" style={{ height: 48, width: '100%', borderRadius: 6 }} />
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <div className="skeleton" style={{ height: 14, width: 80 }} />
+        <div className="skeleton" style={{ height: 14, width: 40 }} />
+      </div>
     </div>
   )
 }
@@ -54,14 +54,7 @@ export default function Dashboard() {
   const [filter, setFilter] = useState('all')
   const [lastUpdated, setLastUpdated] = useState(null)
   
-  const [isDark, setIsDark] = useState(() => document.documentElement.getAttribute('data-theme') === 'dark')
 
-  const toggleTheme = () => {
-    const next = !isDark
-    setIsDark(next)
-    if (next) document.documentElement.setAttribute('data-theme', 'dark')
-    else document.documentElement.removeAttribute('data-theme')
-  }
 
   const fetchLeads = useCallback(async (silent = false) => {
     if (!silent) setLoading(true)
@@ -75,7 +68,7 @@ export default function Dashboard() {
       setLeads(sorted)
       setLastUpdated(new Date())
       setError(null)
-    } catch (err) {
+    } catch {
       setError('Cannot connect to backend. Make sure the server is running on port 3000.')
     } finally {
       setLoading(false)
@@ -99,14 +92,13 @@ export default function Dashboard() {
   const priorityCount = leads.filter(l => l.priority).length
   const hotCount = leads.filter(l => l.score >= 75).length
   const avgScore = leads.length ? Math.round(leads.reduce((s, l) => s + (l.score ?? 0), 0) / leads.length) : 0
-  const avgStyle = getScoreStyle(avgScore)
 
   const FILTERS = [
     { key: 'all', label: 'All Leads' },
-    { key: 'priority', label: '⚠️ Priority' },
-    { key: 'hot', label: '🔥 Hot (75+)' },
-    { key: 'warm', label: '🌡️ Warm (40-74)' },
-    { key: 'cold', label: '❄️ Cold (<40)' },
+    { key: 'priority', label: 'Priority', dot: '#EF4444' },
+    { key: 'hot', label: 'Hot', dot: '#10B981' },
+    { key: 'warm', label: 'Warm', dot: '#F59E0B' },
+    { key: 'cold', label: 'Cold', dot: '#3B82F6' },
   ]
 
   // Generate some fake recent activity for the right sidebar to make it lively
@@ -114,62 +106,50 @@ export default function Dashboard() {
     id: i,
     text: l.lastAiAction ? `Jake messaged ${l.name}` : `New lead added: ${l.name}`,
     time: l.lastContactTime,
-    icon: l.lastAiAction ? '🤖' : '✨'
+    hasAction: !!l.lastAiAction
   }))
 
   return (
     <>
-      {/* Animated Background Blobs */}
-      <div className="ambient-blob blob-1" />
-      <div className="ambient-blob blob-2" />
-
       {/* ── Header ── */}
       <header style={{
         position: 'sticky', top: 0, zIndex: 40,
-        background: 'var(--bg-header)', backdropFilter: 'blur(16px)',
-        borderBottom: '1px solid var(--border)',
-        boxShadow: 'var(--shadow-header)'
+        background: '#FFFFFF',
+        borderBottom: '1px solid #E5E7EB',
       }}>
         <div style={{ margin: '0 auto', padding: '12px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{
-              width: 44, height: 44, borderRadius: 14,
-              background: 'linear-gradient(135deg, #EF4444, #F97316)',
+              width: 32, height: 32, borderRadius: 6,
+              background: '#111827',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#fff', fontSize: 24, fontWeight: 900, fontFamily: "'Rajdhani', sans-serif",
-              boxShadow: '0 4px 12px rgba(239,68,68,0.3)'
+              color: '#fff', fontSize: 16, fontWeight: 700
             }}>T</div>
             <div>
-              <h1 style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: 24, fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1.1 }}>
-                ThrottleResponse<span style={{ color: '#EF4444' }}>BDC</span>
+              <h1 style={{ fontSize: 18, fontWeight: 600, color: '#111827', lineHeight: 1.1 }}>
+                ThrottleResponseBDC
               </h1>
-              <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>AI-Powered BDC Platform</p>
             </div>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             {lastUpdated && (
-              <p style={{ fontSize: 13, color: 'var(--text-muted)', display: 'none' }} className="sm:block">
+              <p style={{ fontSize: 13, color: '#6B7280', display: 'none' }} className="sm:block">
                 Refreshed {formatClock(lastUpdated)}
               </p>
             )}
 
-            <button onClick={toggleTheme} className="btn-ghost" style={{ padding: '8px 10px', borderRadius: 12 }} title="Toggle Dark Mode">
-              <span style={{ fontSize: 18 }}>{isDark ? '☀️' : '🌙'}</span>
-            </button>
+
 
             {priorityCount > 0 && (
-              <span className="badge anim-slide-right" style={{ background: 'rgba(239,68,68,0.1)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.25)', padding: '6px 14px' }}>
-                 <span style={{ position:'relative', display:'inline-flex', width:8, height:8, marginRight: 6 }}>
-                    <span style={{ position:'absolute', inset:0, borderRadius:'50%', background:'#EF4444', opacity:0.6, animation:'ping-dot 1.4s cubic-bezier(0,0,0.2,1) infinite' }} />
-                    <span style={{ position:'relative', width:8, height:8, borderRadius:'50%', background:'#EF4444', display:'block' }} />
-                  </span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#EF4444', fontSize: 12, fontWeight: 500, borderRadius: 6 }}>
+                <AlertCircle size={14} />
                 {priorityCount} Alert{priorityCount !== 1 ? 's' : ''}
               </span>
             )}
 
             <button onClick={() => setShowModal(true)} className="btn-primary">
-              <span style={{ fontSize: 18, lineHeight: 1 }}>+</span> Add Lead
+              <Plus size={16} /> Add Lead
             </button>
           </div>
         </div>
@@ -180,26 +160,26 @@ export default function Dashboard() {
         
         {/* Left Sidebar */}
         <aside style={{
-          width: 260, borderRight: '1px solid var(--border)', background: 'var(--bg-sidebar)',
-          padding: '32px 16px', display: 'flex', flexDirection: 'column', gap: 8,
+          width: 260, borderRight: '1px solid #E5E7EB', background: '#FFFFFF',
+          padding: '32px 16px', display: 'flex', flexDirection: 'column', gap: 4,
           flexShrink: 0
         }} className="hidden lg:flex">
-          <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginLeft: 14, marginBottom: 8 }}>Menu</p>
+          <p style={{ fontSize: 10, fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.1em', marginLeft: 14, marginBottom: 8 }}>Menu</p>
           <div className="sidebar-item active">
-            <span style={{ fontSize: 18 }}>📊</span> Dashboard
+            <LayoutDashboard size={18} /> Dashboard
           </div>
           <div className="sidebar-item">
-            <span style={{ fontSize: 18 }}>👥</span> All Leads
+            <Users size={18} /> All Leads
           </div>
           <div className="sidebar-item">
-            <span style={{ fontSize: 18 }}>📅</span> Appointments
+            <Calendar size={18} /> Appointments
           </div>
-          <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginLeft: 14, marginTop: 24, marginBottom: 8 }}>AI Settings</p>
+          <p style={{ fontSize: 10, fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.1em', marginLeft: 14, marginTop: 24, marginBottom: 8 }}>AI Settings</p>
           <div className="sidebar-item">
-            <span style={{ fontSize: 18 }}>⚡</span> Persona config
+            <Settings size={18} /> Persona config
           </div>
           <div className="sidebar-item">
-            <span style={{ fontSize: 18 }}>💬</span> SMS Integration
+            <MessageSquare size={18} /> SMS Integration
           </div>
         </aside>
 
@@ -208,28 +188,32 @@ export default function Dashboard() {
           
           {/* Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, marginBottom: 32 }}>
-            <StatCard label="Total Leads" value={leads.length} color="#6366F1" icon="👥" />
-            <StatCard label="Priority Alerts" value={priorityCount} color="#EF4444" icon="⚠️" />
-            <StatCard label="Hot Leads (75+)" value={hotCount} color="#22C55E" icon="🔥" />
-            <StatCard label="Avg Score" value={avgScore} color={avgStyle.bg} icon="📊" />
+            <StatCard label="Total Leads" value={leads.length} icon={Users} />
+            <StatCard label="Priority Alerts" value={priorityCount} icon={AlertCircle} />
+            <StatCard label="Hot Leads (75+)" value={hotCount} icon={Flame} />
+            <StatCard label="Avg Score" value={avgScore} icon={BarChart2} />
           </div>
 
           {/* Filters */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
             {FILTERS.map(f => (
               <button key={f.key} onClick={() => setFilter(f.key)} className="btn-ghost"
-                style={filter === f.key ? { background: 'var(--text-primary)', color: 'var(--bg-app)', borderColor: 'var(--text-primary)' } : {}}>
+                style={{
+                  padding: '6px 12px', borderRadius: 6, fontSize: 13, border: 'none', background: filter === f.key ? '#111827' : 'transparent', color: filter === f.key ? '#FFFFFF' : '#6B7280'
+                }}>
+                {f.dot && <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: f.dot, marginRight: 6 }} />}
                 {f.label}
               </button>
             ))}
-            <span style={{ marginLeft: 'auto', fontSize: 13, color: 'var(--text-muted)', background: 'var(--bg-tag)', padding: '6px 12px', borderRadius: 99 }}>
+            <span style={{ marginLeft: 'auto', fontSize: 12, color: '#9CA3AF' }}>
               Auto-refreshing every 30s
             </span>
           </div>
 
           {error && (
-            <div style={{ padding: '14px 20px', background: 'rgba(239,68,68,0.1)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 12, marginBottom: 24, fontSize: 14, fontWeight: 500 }}>
-              ⚠️ {error}
+            <div style={{ padding: '12px 16px', background: '#FEF2F2', color: '#111827', borderLeft: '3px solid #EF4444', fontSize: 13, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <AlertCircle size={16} color="#EF4444" />
+              {error}
             </div>
           )}
 
@@ -239,10 +223,10 @@ export default function Dashboard() {
               {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
             </div>
           ) : filteredLeads.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '80px 20px', border: '2px dashed var(--border)', borderRadius: 24 }}>
-              <div style={{ fontSize: 56, marginBottom: 16 }}>🏍️</div>
-              <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8, color: 'var(--text-primary)' }}>No leads yet</h2>
-              <p style={{ color: 'var(--text-secondary)', marginBottom: 24 }}>
+            <div style={{ textAlign: 'center', padding: '80px 20px', border: '1px solid #E5E7EB', borderRadius: 8 }}>
+              <div style={{ color: '#9CA3AF', marginBottom: 16, display: 'flex', justifyContent: 'center' }}><Users size={32} /></div>
+              <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8, color: '#111827' }}>No leads yet</h2>
+              <p style={{ color: '#6B7280', fontSize: 14, marginBottom: 24 }}>
                 {filter !== 'all' ? 'No leads match this filter.' : 'Add your first lead to get started.'}
               </p>
               {filter === 'all' && (
@@ -262,28 +246,34 @@ export default function Dashboard() {
 
         {/* Right Sidebar - Activity Feed */}
         <aside style={{
-          width: 320, borderLeft: '1px solid var(--border)', background: 'var(--bg-sidebar)',
+          width: 320, borderLeft: '1px solid #E5E7EB', background: '#FFFFFF',
           padding: '32px 24px', flexShrink: 0
         }} className="hidden xl:block">
-          <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 24 }}>Live Activity Log</h2>
+          <h2 style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 20 }}>Live Activity Log</h2>
           
           {activities.length === 0 ? (
-            <p style={{ fontSize: 14, color: 'var(--text-muted)', fontStyle: 'italic' }}>Waiting for activity...</p>
+            <p style={{ fontSize: 13, color: '#6B7280' }}>Waiting for activity...</p>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {activities.map(act => (
-                <div key={act.id} className="activity-item anim-fade-up" style={{ animationDelay: `${act.id * 80}ms` }}>
-                  <div className="activity-dot" />
-                  <div style={{ display: 'flex', gap: 10 }}>
-                    <span style={{ fontSize: 16 }}>{act.icon}</span>
-                    <div>
-                      <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.4 }}>
-                        {act.text}
-                      </p>
-                      <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
-                        {timeAgo(act.time)}
-                      </p>
-                    </div>
+                <div key={act.id} className="anim-fade-up" style={{ animationDelay: `${act.id * 80}ms`, display: 'flex', gap: 12 }}>
+                  <div style={{ marginTop: 4 }}>
+                    {act.id === 0 ? (
+                      <span style={{ position:'relative', display:'block', width:6, height:6 }}>
+                        <span style={{ position:'absolute', inset:0, borderRadius:'50%', background:'#10B981', opacity:0.4, animation:'ping-dot 1.4s cubic-bezier(0,0,0.2,1) infinite' }} />
+                        <span style={{ position:'relative', width:6, height:6, borderRadius:'50%', background:'#10B981', display:'block' }} />
+                      </span>
+                    ) : (
+                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#D1D5DB' }} />
+                    )}
+                  </div>
+                  <div>
+                    <p style={{ fontSize: 13, fontWeight: 500, color: '#111827', lineHeight: 1.4 }}>
+                      {act.text}
+                    </p>
+                    <p style={{ fontSize: 12, color: '#9CA3AF', marginTop: 2 }}>
+                      {timeAgo(act.time)}
+                    </p>
                   </div>
                 </div>
               ))}

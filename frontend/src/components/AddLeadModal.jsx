@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { leadsApi } from '../api/leads'
+import { X, AlertCircle } from 'lucide-react'
 
 export default function AddLeadModal({ onClose, onAdded }) {
   const [form, setForm] = useState({ name: '', phone: '', email: '', bikeInterest: '', initialMessage: '' })
@@ -31,15 +32,17 @@ export default function AddLeadModal({ onClose, onAdded }) {
     <div style={{
       position: 'fixed', inset: 0, zIndex: 50,
       display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
-      background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)'
+      background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)'
     }}>
       <div className="card anim-fade-up" style={{ width: '100%', maxWidth: 440, padding: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-          <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>Add New Lead</h2>
+          <h2 style={{ fontSize: 18, fontWeight: 600, color: '#111827' }}>Add New Lead</h2>
           <button onClick={onClose} style={{
             background: 'transparent', border: 'none', cursor: 'pointer',
-            fontSize: 20, color: 'var(--text-muted)'
-          }}>✕</button>
+            color: '#6B7280', display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}>
+            <X size={18} />
+          </button>
         </div>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -50,7 +53,7 @@ export default function AddLeadModal({ onClose, onAdded }) {
             { name: 'bikeInterest', label: 'Bike of Interest', placeholder: '2024 Street Glide', type: 'text' },
           ].map(f => (
             <div key={f.name}>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 500, color: '#6B7280', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                 {f.label}
               </label>
               <input
@@ -61,7 +64,7 @@ export default function AddLeadModal({ onClose, onAdded }) {
           ))}
 
           <div>
-            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <label style={{ display: 'block', fontSize: 11, fontWeight: 500, color: '#6B7280', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
               Initial Message (optional)
             </label>
             <textarea
@@ -72,16 +75,17 @@ export default function AddLeadModal({ onClose, onAdded }) {
           </div>
 
           {error && (
-            <p style={{ padding: '8px 12px', borderRadius: 8, background: 'rgba(239,68,68,0.1)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.25)', fontSize: 13 }}>
+            <div style={{ padding: '12px 16px', background: '#FEF2F2', color: '#111827', borderLeft: '3px solid #EF4444', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <AlertCircle size={16} color="#EF4444" />
               {error}
-            </p>
+            </div>
           )}
 
           <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
-            <button type="button" className="btn-ghost" onClick={onClose} style={{ flex: 1, justifyContent: 'center' }}>
+            <button type="button" className="btn-ghost" onClick={onClose} style={{ flex: 1, justifyContent: 'center', borderRadius: 6 }}>
               Cancel
             </button>
-            <button type="submit" className="btn-primary" disabled={loading} style={{ flex: 1, justifyContent: 'center' }}>
+            <button type="submit" className="btn-primary" disabled={loading} style={{ flex: 1, justifyContent: 'center', borderRadius: 6 }}>
               {loading ? 'Adding...' : 'Add Lead'}
             </button>
           </div>
