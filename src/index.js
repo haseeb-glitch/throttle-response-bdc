@@ -8,6 +8,7 @@ const appointmentsRouter = require('./routes/appointments');
 const analyticsRouter = require('./routes/analytics');
 const settingsRouter = require('./routes/settings');
 const db = require('./services/database');
+const { startScheduler } = require('./services/scheduler');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -42,4 +43,5 @@ app.get('/', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  startScheduler(); // Re-engagement scheduler start karo
 });

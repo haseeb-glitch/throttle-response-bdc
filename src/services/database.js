@@ -22,6 +22,8 @@ function toDbFormat(lead) {
     last_ai_action: lead.lastAiAction,
     next_follow_up: lead.nextFollowUp,
     manual_takeover: lead.manualTakeover,
+    followup_3hr_sent: lead.followup3hrSent,
+    followup_5hr_sent: lead.followup5hrSent,
     conversation: lead.conversation,
     created_at: lead.createdAt,
     last_contact_time: lead.lastContactTime
@@ -45,6 +47,8 @@ function fromDbFormat(row) {
     lastAiAction: row.last_ai_action,
     nextFollowUp: row.next_follow_up,
     manualTakeover: row.manual_takeover,
+    followup3hrSent: row.followup_3hr_sent,
+    followup5hrSent: row.followup_5hr_sent,
     conversation: row.conversation,
     createdAt: row.created_at,
     lastContactTime: row.last_contact_time
