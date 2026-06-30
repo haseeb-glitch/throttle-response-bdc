@@ -29,8 +29,8 @@ export default function Sidebar({ priorityCount = 0, manualTakeoverCount = 0 }) 
   return (
     <aside style={{
       width: 240,
-      borderRight: '1px solid #E5E7EB',
-      background: '#FFFFFF',
+      borderRight: '1px solid var(--border)',
+      background: 'var(--bg-sidebar)',
       padding: '28px 12px',
       display: 'flex',
       flexDirection: 'column',
@@ -44,7 +44,7 @@ export default function Sidebar({ priorityCount = 0, manualTakeoverCount = 0 }) 
       {NAV_SECTIONS.map(section => (
         <div key={section.label} style={{ marginBottom: 8 }}>
           <p style={{
-            fontSize: 10, fontWeight: 600, color: '#9CA3AF',
+            fontSize: 10, fontWeight: 600, color: 'var(--text-muted)',
             textTransform: 'uppercase', letterSpacing: '0.1em',
             marginLeft: 12, marginBottom: 4, marginTop: 12
           }}>
@@ -64,14 +64,14 @@ export default function Sidebar({ priorityCount = 0, manualTakeoverCount = 0 }) 
                   borderRadius: 6,
                   fontSize: 14,
                   fontWeight: active ? 500 : 400,
-                  color: active ? '#111827' : '#6B7280',
-                  background: active ? '#F3F4F6' : 'transparent',
+                  color: active ? 'var(--text-primary)' : 'var(--text-secondary)',
+                  background: active ? 'var(--bg-tag)' : 'transparent',
                   textDecoration: 'none',
                   transition: 'background 0.12s, color 0.12s',
                   position: 'relative',
                 }}
-                onMouseEnter={e => { if (!active) { e.currentTarget.style.background = '#F9FAFB'; e.currentTarget.style.color = '#374151' } }}
-                onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#6B7280' } }}
+                onMouseEnter={e => { if (!active) { e.currentTarget.style.background = 'var(--bg-card-hover)'; e.currentTarget.style.color = 'var(--text-primary)' } }}
+                onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-secondary)' } }}
               >
                 <Icon size={16} strokeWidth={active ? 2 : 1.75} />
                 {label}
@@ -112,13 +112,13 @@ export default function Sidebar({ priorityCount = 0, manualTakeoverCount = 0 }) 
       ))}
 
       {/* Footer */}
-      <div style={{ marginTop: 'auto', paddingTop: 24, borderTop: '1px solid #F3F4F6' }}>
+      <div style={{ marginTop: 'auto', paddingTop: 24, borderTop: '1px solid var(--border)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px' }}>
           <div style={{
             width: 8, height: 8, borderRadius: '50%', background: '#10B981',
-            boxShadow: '0 0 0 2px #D1FAE5'
+            boxShadow: '0 0 0 2px rgba(16,185,129,0.25)'
           }} />
-          <span style={{ fontSize: 12, color: '#6B7280' }}>Jake is active</span>
+          <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Jake is active</span>
         </div>
       </div>
     </aside>

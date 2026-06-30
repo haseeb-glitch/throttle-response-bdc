@@ -14,7 +14,7 @@
   --bg-sidebar:   #FFFFFF;
 
   --border:       #E5E7EB;
-  --border-focus: #4F46E5;
+  --border-focus: #F97316;
 
   --text-primary:  #111827;
   --text-secondary:#4B5563;
@@ -36,7 +36,7 @@
   --bg-sidebar:   #0F172A;
 
   --border:       #1E293B;
-  --border-focus: #818CF8;
+  --border-focus: #FB923C;
 
   --text-primary:  #F8FAFC;
   --text-secondary:#94A3B8;
@@ -68,8 +68,6 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
-
-/* ─── Ambient Glow Effects (Removed) ───────────────────────── */
 
 /* ─── Animations ───────────────────────────────────────────── */
 @keyframes fadeUp {
@@ -124,7 +122,7 @@ body {
   border-color: #374151;
 }
 .bubble-jake {
-  background: #4F46E5;
+  background: #F97316;
   color: #FFFFFF;
   border-radius: 6px;
 }
@@ -163,7 +161,7 @@ body {
 .input-base::placeholder { color: var(--text-muted); }
 .input-base:focus {
   border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+  box-shadow: 0 0 0 3px rgba(249,115,22,0.15);
 }
 
 /* ─── Button ────────────────────────────────────────────────── */
@@ -172,7 +170,7 @@ body {
   align-items: center;
   gap: 6px;
   padding: 9px 18px;
-  background: #4F46E5;
+  background: #F97316;
   color: #fff;
   font-weight: 500;
   font-size: 14px;
@@ -182,7 +180,7 @@ body {
   transition: background 0.15s;
   white-space: nowrap;
 }
-.btn-primary:hover  { background: #4338CA; }
+.btn-primary:hover  { background: #EA580C; }
 .btn-primary:active { transform: scale(0.98); }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
@@ -232,13 +230,13 @@ body {
 }
 .sidebar-item:hover {
   background: var(--bg-tag);
-  color: #111827;
+  color: var(--text-primary);
 }
 .sidebar-item.active {
-  background: #F5F3FF;
-  border-left: 3px solid #4F46E5;
+  background: rgba(249,115,22,0.12);
+  border-left: 3px solid #F97316;
   border-radius: 0 6px 6px 0;
-  color: #111827;
+  color: var(--text-primary);
   padding-left: 11px; /* Account for 3px border */
 }
 
@@ -260,6 +258,6 @@ body {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #6366F1;
+  background: #F97316;
   border: 2px solid var(--bg-sidebar);
 }

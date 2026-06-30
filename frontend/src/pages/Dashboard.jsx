@@ -5,6 +5,8 @@ import AddLeadModal from '../components/AddLeadModal'
 import Sidebar from '../components/Sidebar'
 import { timeAgo } from '../utils/helpers'
 import { Users, AlertCircle, Flame, BarChart2, Plus } from 'lucide-react'
+import { Sun, Moon } from 'lucide-react'
+import { useTheme } from '../hooks/useTheme'
 
 const POLL_INTERVAL = 30000
 
@@ -12,13 +14,13 @@ function StatCard({ label, value, icon: Icon }) {
   return (
     <div className="card" style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <p style={{ fontSize: 11, fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        <p style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
           {label}
         </p>
-        <Icon size={18} color="#6B7280" strokeWidth={2} />
+        <Icon size={18} color="var(--text-muted)" strokeWidth={2} />
       </div>
       <div>
-        <p style={{ fontSize: 28, fontWeight: 700, color: '#111827', lineHeight: 1 }}>
+        <p style={{ fontSize: 28, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>
           {value}
         </p>
       </div>
@@ -48,6 +50,7 @@ function SkeletonCard() {
 }
 
 export default function Dashboard() {
+  const { theme, toggleTheme } = useTheme()
   const [leads, setLeads] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -116,8 +119,8 @@ export default function Dashboard() {
       {/* ── Header ── */}
       <header style={{
         position: 'sticky', top: 0, zIndex: 40,
-        background: '#FFFFFF',
-        borderBottom: '1px solid #E5E7EB',
+        background: 'var(--bg-header)',
+        borderBottom: '1px solid var(--border)',
       }}>
         <div style={{ margin: '0 auto', padding: '12px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -128,7 +131,7 @@ export default function Dashboard() {
               color: '#fff', fontSize: 16, fontWeight: 700
             }}>T</div>
             <div>
-              <h1 style={{ fontSize: 18, fontWeight: 600, color: '#111827', lineHeight: 1.1 }}>
+              <h1 style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.1 }}>
                 ThrottleResponseBDC
               </h1>
             </div>
@@ -136,7 +139,7 @@ export default function Dashboard() {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             {lastUpdated && (
-              <p style={{ fontSize: 13, color: '#6B7280', display: 'none' }} className="sm:block">
+              <p style={{ fontSize: 13, color: 'var(--text-muted)', display: 'none' }} className="sm:block">
                 Refreshed {formatClock(lastUpdated)}
               </p>
             )}
@@ -149,6 +152,10 @@ export default function Dashboard() {
                 {priorityCount} Alert{priorityCount !== 1 ? 's' : ''}
               </span>
             )}
+
+            <button onClick={toggleTheme} className="btn-ghost" style={{ padding: '8px 10px' }}>
+                {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
 
             <button onClick={() => setShowModal(true)} className="btn-primary">
               <Plus size={16} /> Add Lead
@@ -179,13 +186,13 @@ export default function Dashboard() {
             {FILTERS.map(f => (
               <button key={f.key} onClick={() => setFilter(f.key)} className="btn-ghost"
                 style={{
-                  padding: '6px 12px', borderRadius: 6, fontSize: 13, border: 'none', background: filter === f.key ? '#111827' : 'transparent', color: filter === f.key ? '#FFFFFF' : '#6B7280'
+                  padding: '6px 12px', borderRadius: 6, fontSize: 13, border: 'none', background: filter === f.key ? '#F97316' : 'transparent', color: filter === f.key ? '#FFFFFF' : 'var(--text-secondary)'
                 }}>
                 {f.dot && <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: f.dot, marginRight: 6 }} />}
                 {f.label}
               </button>
             ))}
-            <span style={{ marginLeft: 'auto', fontSize: 12, color: '#9CA3AF' }}>
+            <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--text-muted)' }}>
               Auto-refreshing every 30s
             </span>
           </div>
@@ -203,10 +210,10 @@ export default function Dashboard() {
               {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
             </div>
           ) : filteredLeads.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '80px 20px', border: '1px solid #E5E7EB', borderRadius: 8 }}>
-              <div style={{ color: '#9CA3AF', marginBottom: 16, display: 'flex', justifyContent: 'center' }}><Users size={32} /></div>
-              <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8, color: '#111827' }}>No leads yet</h2>
-              <p style={{ color: '#6B7280', fontSize: 14, marginBottom: 24 }}>
+            <div style={{ textAlign: 'center', padding: '80px 20px', border: '1px solid var(--border)', borderRadius: 8 }}>
+              <div style={{ color: 'var(--text-muted)', marginBottom: 16, display: 'flex', justifyContent: 'center' }}><Users size={32} /></div>
+              <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8, color: 'var(--text-primary)' }}>No leads yet</h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 24 }}>
                 {filter !== 'all' ? 'No leads match this filter.' : 'Add your first lead to get started.'}
               </p>
               {filter === 'all' && (
@@ -226,13 +233,13 @@ export default function Dashboard() {
 
         {/* Right Sidebar - Activity Feed */}
         <aside style={{
-          width: 320, borderLeft: '1px solid #E5E7EB', background: '#FFFFFF',
+          width: 320, borderLeft: '1px solid var(--border)', background: 'var(--bg-sidebar)',
           padding: '32px 24px', flexShrink: 0
         }} className="hidden xl:block">
-          <h2 style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 20 }}>Live Activity Log</h2>
+          <h2 style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 20 }}>Live Activity Log</h2>
           
           {activities.length === 0 ? (
-            <p style={{ fontSize: 13, color: '#6B7280' }}>Waiting for activity...</p>
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Waiting for activity...</p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {activities.map(act => (
@@ -244,14 +251,14 @@ export default function Dashboard() {
                         <span style={{ position:'relative', width:6, height:6, borderRadius:'50%', background:'#10B981', display:'block' }} />
                       </span>
                     ) : (
-                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#D1D5DB' }} />
+                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--text-muted)' }} />
                     )}
                   </div>
                   <div>
-                    <p style={{ fontSize: 13, fontWeight: 500, color: '#111827', lineHeight: 1.4 }}>
+                    <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.4 }}>
                       {act.text}
                     </p>
-                    <p style={{ fontSize: 12, color: '#9CA3AF', marginTop: 2 }}>
+                    <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
                       {timeAgo(act.time)}
                     </p>
                   </div>
