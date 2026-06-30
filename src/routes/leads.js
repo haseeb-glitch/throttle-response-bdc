@@ -40,6 +40,7 @@ router.post('/', async (req, res) => {
       scoreBreakdown: {},
       lastAiAction: null,
       nextFollowUp: null,
+      manualTakeover: false,
       conversation: [],
       createdAt: new Date().toISOString(),
       lastContactTime: new Date().toISOString()
@@ -125,46 +126,82 @@ router.post('/:id/message', async (req, res) => {
     });
 
     const canRespond = await shouldRespond();
+    const isHumanInControl = lead.manualTakeover;
 
-    if (canRespond) {
-      const aiResponse = await generateResponse(lead.conversation, lead);
+    if (canRespond && !isHumanInControl) {
+      try {
+        const aiResponse = await generateResponse(lead.conversation, lead);
 
-      lead.conversation.push({
-        role: 'assistant',
-        content: aiResponse,
-        timestamp: new Date().toISOString()
-      });
+        lead.conversation.push({
+          role: 'assistant',
+          content: aiResponse,
+          timestamp: new Date().toISOString()
+        });
 
-      lead.lastAiAction = aiResponse;
-      lead.lastContactTime = new Date().toISOString();
+        lead.lastAiAction = aiResponse;
+        lead.lastContactTime = new Date().toISOString();
 
-      const scoreResult = calculateScore(lead.conversation, lead);
-      lead.score = scoreResult.score;
-      lead.scoreColor = getScoreColor(scoreResult.score);
-      lead.buyingSignals = scoreResult.signals;
-      lead.scoreBreakdown = scoreResult.breakdown;
+        const scoreResult = calculateScore(lead.conversation, lead);
+        lead.score = scoreResult.score;
+        lead.scoreColor = getScoreColor(scoreResult.score);
+        lead.buyingSignals = scoreResult.signals;
+        lead.scoreBreakdown = scoreResult.breakdown;
 
-      const priorityResult = checkPriorityFlag(lead.conversation);
-      lead.priority = priorityResult.isPriority;
-      lead.priorityReasons = priorityResult.reasons;
+        const priorityResult = checkPriorityFlag(lead.conversation);
+        lead.priority = priorityResult.isPriority;
+        lead.priorityReasons = priorityResult.reasons;
 
-      await sendSMS(lead.phone, aiResponse);
+        await sendSMS(lead.phone, aiResponse);
 
+        const updatedLead = await db.updateLead(lead.id, lead);
+        res.json({ success: true, aiResponse, lead: updatedLead });
+
+      } catch (err) {
+        console.error('AI response error:', err.message);
+        res.status(500).json({ success: false, message: 'AI response failed' });
+      }
+    } else if (isHumanInControl) {
       const updatedLead = await db.updateLead(lead.id, lead);
-      res.json({ success: true, aiResponse, lead: updatedLead });
-
+      res.json({
+        success: true,
+        aiResponse: null,
+        message: 'Manual takeover active — Jake is paused',
+        manualTakeover: true,
+        lead: updatedLead
+      });
     } else {
+      const updatedLead = await db.updateLead(lead.id, lead);
       res.json({
         success: true,
         aiResponse: null,
         message: 'Outside operating hours',
-        lead
+        lead: updatedLead
       });
     }
 
   } catch (err) {
     console.error('Message error:', err.message);
     res.status(500).json({ success: false, message: 'Failed to process message' });
+  }
+});
+
+// Toggle manual takeover on/off
+router.patch('/:id/takeover', async (req, res) => {
+  try {
+    const lead = await db.getLeadById(req.params.id);
+    if (!lead) return res.status(404).json({ success: false, message: 'Lead not found' });
+
+    lead.manualTakeover = !lead.manualTakeover;
+    lead.lastAiAction = lead.manualTakeover
+      ? 'Manual takeover active — Jake is paused.'
+      : 'Jake resumed — AI responding again.';
+
+    const updatedLead = await db.updateLead(lead.id, lead);
+    res.json({ success: true, manualTakeover: updatedLead.manualTakeover, lead: updatedLead });
+
+  } catch (err) {
+    console.error('Takeover toggle error:', err.message);
+    res.status(500).json({ success: false, message: 'Failed to toggle takeover' });
   }
 });
 
