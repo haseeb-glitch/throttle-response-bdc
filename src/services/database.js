@@ -1,0 +1,113 @@
+const { createClient } = require('@supabase/supabase-js');
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+);
+
+// Lead ko Supabase format mein convert karo
+function toDbFormat(lead) {
+  return {
+    id: lead.id,
+    name: lead.name,
+    phone: lead.phone,
+    email: lead.email,
+    bike_interest: lead.bikeInterest,
+    score: lead.score,
+    score_color: lead.scoreColor,
+    priority: lead.priority,
+    priority_reasons: lead.priorityReasons,
+    buying_signals: lead.buyingSignals,
+    score_breakdown: lead.scoreBreakdown,
+    last_ai_action: lead.lastAiAction,
+    next_follow_up: lead.nextFollowUp,
+    conversation: lead.conversation,
+    created_at: lead.createdAt,
+    last_contact_time: lead.lastContactTime
+  };
+}
+
+// Supabase row ko app format mein convert karo
+function fromDbFormat(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    phone: row.phone,
+    email: row.email,
+    bikeInterest: row.bike_interest,
+    score: row.score,
+    scoreColor: row.score_color,
+    priority: row.priority,
+    priorityReasons: row.priority_reasons,
+    buyingSignals: row.buying_signals,
+    scoreBreakdown: row.score_breakdown,
+    lastAiAction: row.last_ai_action,
+    nextFollowUp: row.next_follow_up,
+    conversation: row.conversation,
+    createdAt: row.created_at,
+    lastContactTime: row.last_contact_time
+  };
+}
+
+async function createLead(lead) {
+  const { data, error } = await supabase
+    .from('leads')
+    .insert([toDbFormat(lead)])
+    .select()
+    .single();
+
+  if (error) throw error;
+  return fromDbFormat(data);
+}
+
+async function getAllLeads() {
+  const { data, error } = await supabase
+    .from('leads')
+    .select('*')
+    .order('score', { ascending: false });
+
+  if (error) throw error;
+  return data.map(fromDbFormat);
+}
+
+async function getLeadById(id) {
+  const { data, error } = await supabase
+    .from('leads')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) return null;
+  return fromDbFormat(data);
+}
+
+async function getLeadByPhone(phone) {
+  const { data, error } = await supabase
+    .from('leads')
+    .select('*')
+    .eq('phone', phone)
+    .single();
+
+  if (error) return null;
+  return fromDbFormat(data);
+}
+
+async function updateLead(id, updates) {
+  const { data, error } = await supabase
+    .from('leads')
+    .update(toDbFormat({ id, ...updates }))
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return fromDbFormat(data);
+}
+
+module.exports = {
+  createLead,
+  getAllLeads,
+  getLeadById,
+  getLeadByPhone,
+  updateLead
+};

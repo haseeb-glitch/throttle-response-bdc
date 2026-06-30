@@ -1,16 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { parseTwilioWebhook } = require('../services/sms');
+const { parseTwilioWebhook, sendSMS } = require('../services/sms');
 const { generateResponse, shouldRespond } = require('../services/ai');
 const { calculateScore, checkPriorityFlag, getScoreColor } = require('../services/scoring');
-const { sendSMS } = require('../services/sms');
-
-// Shared leads array — baad mein Supabase se replace hoga
-let leadsStore = null;
-
-function setLeadsStore(store) {
-  leadsStore = store;
-}
+const db = require('../services/database');
 
 // Twilio webhook — jab customer SMS kare
 router.post('/incoming', async (req, res) => {
@@ -19,17 +12,15 @@ router.post('/incoming', async (req, res) => {
 
     console.log(`📩 Incoming SMS from ${from}: ${message}`);
 
-    // Lead dhundo phone number se
-    const lead = leadsStore.find(l => l.phone === from.replace('+1', ''));
+    const cleanPhone = from.replace('+1', '');
+    const lead = await db.getLeadByPhone(cleanPhone);
 
     if (!lead) {
       console.log(`⚠️ No lead found for ${from}`);
-      // TwiML empty response
       res.set('Content-Type', 'text/xml');
       return res.send('<Response></Response>');
     }
 
-    // Customer message conversation mein add karo
     lead.conversation.push({
       role: 'user',
       content: message,
@@ -50,23 +41,20 @@ router.post('/incoming', async (req, res) => {
       lead.lastAiAction = aiResponse;
       lead.lastContactTime = new Date().toISOString();
 
-      // Score update karo
       const scoreResult = calculateScore(lead.conversation, lead);
       lead.score = scoreResult.score;
       lead.scoreColor = getScoreColor(scoreResult.score);
       lead.buyingSignals = scoreResult.signals;
       lead.scoreBreakdown = scoreResult.breakdown;
 
-      // Priority check karo
       const priorityResult = checkPriorityFlag(lead.conversation);
       lead.priority = priorityResult.isPriority;
       lead.priorityReasons = priorityResult.reasons;
 
-      // SMS bhejo
+      await db.updateLead(lead.id, lead);
       await sendSMS(from, aiResponse);
     }
 
-    // TwiML response — Twilio ko batao handled ho gaya
     res.set('Content-Type', 'text/xml');
     res.send('<Response></Response>');
 
@@ -77,4 +65,4 @@ router.post('/incoming', async (req, res) => {
   }
 });
 
-module.exports = { router, setLeadsStore };
+module.exports = { router };

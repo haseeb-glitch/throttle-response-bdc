@@ -2,28 +2,31 @@ const express = require('express');
 const { generateResponse, shouldRespond, getFirstResponseDelay } = require('../services/ai');
 const { calculateScore, checkPriorityFlag, getScoreColor } = require('../services/scoring');
 const { sendSMS, sendDelayedSMS } = require('../services/sms');
+const db = require('../services/database');
 
-module.exports = function(leads) {
-  const router = express.Router();
+const router = express.Router();
 
-  // Get all leads
-  router.get('/', (req, res) => {
-    const leadsWithColor = leads.map(lead => ({
-      ...lead,
-      scoreColor: getScoreColor(lead.score)
-    }));
-    res.json({ success: true, leads: leadsWithColor });
-  });
+// Get all leads
+router.get('/', async (req, res) => {
+  try {
+    const leads = await db.getAllLeads();
+    res.json({ success: true, leads });
+  } catch (err) {
+    console.error('Get leads error:', err.message);
+    res.status(500).json({ success: false, message: 'Failed to fetch leads' });
+  }
+});
 
-  // Add new lead
-  router.post('/', async (req, res) => {
+// Add new lead
+router.post('/', async (req, res) => {
+  try {
     const { name, phone, email, bikeInterest, initialMessage } = req.body;
 
     if (!name || !phone) {
       return res.status(400).json({ success: false, message: 'Name and phone required' });
     }
 
-    const lead = {
+    let lead = {
       id: Date.now().toString(),
       name,
       phone,
@@ -65,20 +68,17 @@ module.exports = function(leads) {
           lead.lastAiAction = aiResponse;
           lead.lastContactTime = new Date().toISOString();
 
-          // Score calculate karo
           const scoreResult = calculateScore(lead.conversation, lead);
           lead.score = scoreResult.score;
           lead.scoreColor = getScoreColor(scoreResult.score);
           lead.buyingSignals = scoreResult.signals;
           lead.scoreBreakdown = scoreResult.breakdown;
 
-          // Priority check karo
           const priorityResult = checkPriorityFlag(lead.conversation);
           lead.priority = priorityResult.isPriority;
           lead.priorityReasons = priorityResult.reasons;
 
-          // SMS bhejo — mock ya real
-          await sendDelayedSMS(lead.phone, aiResponse, delay);
+          sendDelayedSMS(lead.phone, aiResponse, delay);
 
         } catch (err) {
           console.error('AI response error:', err.message);
@@ -89,20 +89,30 @@ module.exports = function(leads) {
       }
     }
 
-    leads.push(lead);
-    res.json({ success: true, lead });
-  });
+    const savedLead = await db.createLead(lead);
+    res.json({ success: true, lead: savedLead });
 
-  // Get single lead
-  router.get('/:id', (req, res) => {
-    const lead = leads.find(l => l.id === req.params.id);
+  } catch (err) {
+    console.error('Create lead error:', err.message);
+    res.status(500).json({ success: false, message: 'Failed to create lead' });
+  }
+});
+
+// Get single lead
+router.get('/:id', async (req, res) => {
+  try {
+    const lead = await db.getLeadById(req.params.id);
     if (!lead) return res.status(404).json({ success: false, message: 'Lead not found' });
     res.json({ success: true, lead });
-  });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to fetch lead' });
+  }
+});
 
-  // Customer ne reply kiya
-  router.post('/:id/message', async (req, res) => {
-    const lead = leads.find(l => l.id === req.params.id);
+// Customer ne reply kiya
+router.post('/:id/message', async (req, res) => {
+  try {
+    const lead = await db.getLeadById(req.params.id);
     if (!lead) return res.status(404).json({ success: false, message: 'Lead not found' });
 
     const { message } = req.body;
@@ -117,37 +127,32 @@ module.exports = function(leads) {
     const canRespond = await shouldRespond();
 
     if (canRespond) {
-      try {
-        const aiResponse = await generateResponse(lead.conversation, lead);
+      const aiResponse = await generateResponse(lead.conversation, lead);
 
-        lead.conversation.push({
-          role: 'assistant',
-          content: aiResponse,
-          timestamp: new Date().toISOString()
-        });
+      lead.conversation.push({
+        role: 'assistant',
+        content: aiResponse,
+        timestamp: new Date().toISOString()
+      });
 
-        lead.lastAiAction = aiResponse;
-        lead.lastContactTime = new Date().toISOString();
+      lead.lastAiAction = aiResponse;
+      lead.lastContactTime = new Date().toISOString();
 
-        const scoreResult = calculateScore(lead.conversation, lead);
-        lead.score = scoreResult.score;
-        lead.scoreColor = getScoreColor(scoreResult.score);
-        lead.buyingSignals = scoreResult.signals;
-        lead.scoreBreakdown = scoreResult.breakdown;
+      const scoreResult = calculateScore(lead.conversation, lead);
+      lead.score = scoreResult.score;
+      lead.scoreColor = getScoreColor(scoreResult.score);
+      lead.buyingSignals = scoreResult.signals;
+      lead.scoreBreakdown = scoreResult.breakdown;
 
-        const priorityResult = checkPriorityFlag(lead.conversation);
-        lead.priority = priorityResult.isPriority;
-        lead.priorityReasons = priorityResult.reasons;
+      const priorityResult = checkPriorityFlag(lead.conversation);
+      lead.priority = priorityResult.isPriority;
+      lead.priorityReasons = priorityResult.reasons;
 
-        // SMS bhejo
-        await sendSMS(lead.phone, aiResponse);
+      await sendSMS(lead.phone, aiResponse);
 
-        res.json({ success: true, aiResponse, lead });
+      const updatedLead = await db.updateLead(lead.id, lead);
+      res.json({ success: true, aiResponse, lead: updatedLead });
 
-      } catch (err) {
-        console.error('AI response error:', err.message);
-        res.status(500).json({ success: false, message: 'AI response failed' });
-      }
     } else {
       res.json({
         success: true,
@@ -156,7 +161,11 @@ module.exports = function(leads) {
         lead
       });
     }
-  });
 
-  return router;
-};
+  } catch (err) {
+    console.error('Message error:', err.message);
+    res.status(500).json({ success: false, message: 'Failed to process message' });
+  }
+});
+
+module.exports = router;
