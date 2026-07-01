@@ -1,20 +1,30 @@
-import { Routes, Route } from 'react-router-dom'
-import Dashboard    from './pages/Dashboard'
-import LeadDetail   from './pages/LeadDetail'
-import Analytics    from './pages/Analytics'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import Dashboard from './pages/Dashboard'
+import LeadDetail from './pages/LeadDetail'
+import Analytics from './pages/Analytics'
 import Appointments from './pages/Appointments'
-import Settings     from './pages/Settings'
+import Settings from './pages/Settings'
+import Login from './pages/Login'
+
+function isAuthenticated() {
+  return localStorage.getItem('trbdc_auth') === 'true'
+}
+
+function ProtectedRoute({ children }) {
+  return isAuthenticated() ? children : <Navigate to="/login" replace />
+}
 
 function App() {
   return (
     <Routes>
-      <Route path="/"             element={<Dashboard    />} />
-      <Route path="/lead/:id"     element={<LeadDetail   />} />
-      <Route path="/leads"        element={<Dashboard    />} />
-      <Route path="/analytics"    element={<Analytics    />} />
-      <Route path="/appointments" element={<Appointments />} />
-      <Route path="/settings"     element={<Settings     />} />
-      <Route path="/sms"          element={<Settings     />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/lead/:id" element={<ProtectedRoute><LeadDetail /></ProtectedRoute>} />
+      <Route path="/leads" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+      <Route path="/appointments" element={<ProtectedRoute><Appointments /></ProtectedRoute>} />
+      <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+      <Route path="/sms" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
     </Routes>
   )
 }

@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
-import { leadsApi } from '../api/leads'
+import { useNavigate } from 'react-router-dom'
+import { leadsApi, authApi } from '../api/leads'
 import LeadCard from '../components/LeadCard'
 import AddLeadModal from '../components/AddLeadModal'
 import Sidebar from '../components/Sidebar'
 import { timeAgo } from '../utils/helpers'
-import { Users, AlertCircle, Flame, BarChart2, Plus } from 'lucide-react'
-import { Sun, Moon } from 'lucide-react'
+import { Users, AlertCircle, Flame, BarChart2, Plus, Sun, Moon, LogOut } from 'lucide-react'
 import { useTheme } from '../hooks/useTheme'
 
 const POLL_INTERVAL = 30000
@@ -50,15 +50,22 @@ function SkeletonCard() {
 }
 
 export default function Dashboard() {
-  const { theme, toggleTheme } = useTheme()
   const [leads, setLeads] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [showModal, setShowModal] = useState(false)
   const [filter, setFilter] = useState('all')
   const [lastUpdated, setLastUpdated] = useState(null)
-  
+  const { theme, toggleTheme } = useTheme()
+  const navigate = useNavigate()
 
+  function handleLogout() {
+    localStorage.removeItem('trbdc_token')
+    localStorage.removeItem('trbdc_auth')
+    localStorage.removeItem('trbdc_user')
+    localStorage.removeItem('trbdc_role')
+    navigate('/login')
+  }
 
   const fetchLeads = useCallback(async (silent = false) => {
     if (!silent) setLoading(true)
@@ -93,10 +100,10 @@ export default function Dashboard() {
     return true
   })
 
-  const priorityCount       = leads.filter(l => l.priority).length
-  const hotCount             = leads.filter(l => l.score >= 75).length
-  const avgScore             = leads.length ? Math.round(leads.reduce((s, l) => s + (l.score ?? 0), 0) / leads.length) : 0
-  const manualTakeoverCount  = leads.filter(l => l.manualTakeover).length
+  const priorityCount = leads.filter(l => l.priority).length
+  const hotCount = leads.filter(l => l.score >= 75).length
+  const avgScore = leads.length ? Math.round(leads.reduce((s, l) => s + (l.score ?? 0), 0) / leads.length) : 0
+  const manualTakeoverCount = leads.filter(l => l.manualTakeover).length
 
   const FILTERS = [
     { key: 'all', label: 'All Leads' },
@@ -106,7 +113,6 @@ export default function Dashboard() {
     { key: 'cold', label: 'Cold', dot: '#3B82F6' },
   ]
 
-  // Generate some fake recent activity for the right sidebar to make it lively
   const activities = leads.slice(0, 5).map((l, i) => ({
     id: i,
     text: l.lastAiAction ? `Jake messaged ${l.name}` : `New lead added: ${l.name}`,
@@ -116,7 +122,7 @@ export default function Dashboard() {
 
   return (
     <>
-      {/* ── Header ── */}
+      {/* Header */}
       <header style={{
         position: 'sticky', top: 0, zIndex: 40,
         background: 'var(--bg-header)',
@@ -126,53 +132,44 @@ export default function Dashboard() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{
               width: 32, height: 32, borderRadius: 6,
-              background: '#111827',
+              background: '#F97316',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: '#fff', fontSize: 16, fontWeight: 700
             }}>T</div>
-            <div>
-              <h1 style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.1 }}>
-                ThrottleResponseBDC
-              </h1>
-            </div>
+            <h1 style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.1 }}>
+              ThrottleResponseBDC
+            </h1>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            {lastUpdated && (
-              <p style={{ fontSize: 13, color: 'var(--text-muted)', display: 'none' }} className="sm:block">
-                Refreshed {formatClock(lastUpdated)}
-              </p>
-            )}
-
-
-
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             {priorityCount > 0 && (
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#EF4444', fontSize: 12, fontWeight: 500, borderRadius: 6 }}>
                 <AlertCircle size={14} />
                 {priorityCount} Alert{priorityCount !== 1 ? 's' : ''}
               </span>
             )}
-
-            <button onClick={toggleTheme} className="btn-ghost" style={{ padding: '8px 10px' }}>
-                {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            <button onClick={toggleTheme} className="btn-ghost" style={{ padding: '8px 10px' }} title="Toggle theme">
+              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
             </button>
-
             <button onClick={() => setShowModal(true)} className="btn-primary">
               <Plus size={16} /> Add Lead
+            </button>
+            <button onClick={handleLogout} className="btn-ghost" style={{ padding: '8px 10px' }} title="Logout">
+              <LogOut size={16} />
             </button>
           </div>
         </div>
       </header>
 
-      {/* ── 3-Column Layout ── */}
+      {/* 3-Column Layout */}
       <div style={{ display: 'flex', minHeight: 'calc(100vh - 70px)', position: 'relative', zIndex: 1 }}>
-        
+
         {/* Left Sidebar */}
         <Sidebar priorityCount={priorityCount} manualTakeoverCount={manualTakeoverCount} />
 
         {/* Main Content */}
         <main style={{ flex: 1, padding: '32px', minWidth: 0 }}>
-          
+
           {/* Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, marginBottom: 32 }}>
             <StatCard label="Total Leads" value={leads.length} icon={Users} />
@@ -186,7 +183,9 @@ export default function Dashboard() {
             {FILTERS.map(f => (
               <button key={f.key} onClick={() => setFilter(f.key)} className="btn-ghost"
                 style={{
-                  padding: '6px 12px', borderRadius: 6, fontSize: 13, border: 'none', background: filter === f.key ? '#F97316' : 'transparent', color: filter === f.key ? '#FFFFFF' : 'var(--text-secondary)'
+                  padding: '6px 12px', borderRadius: 6, fontSize: 13, border: 'none',
+                  background: filter === f.key ? '#F97316' : 'transparent',
+                  color: filter === f.key ? '#FFFFFF' : 'var(--text-secondary)'
                 }}>
                 {f.dot && <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: f.dot, marginRight: 6 }} />}
                 {f.label}
@@ -198,7 +197,7 @@ export default function Dashboard() {
           </div>
 
           {error && (
-            <div style={{ padding: '12px 16px', background: '#FEF2F2', color: '#111827', borderLeft: '3px solid #EF4444', fontSize: 13, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ padding: '12px 16px', background: '#FEF2F2', color: '#EF4444', borderLeft: '3px solid #EF4444', fontSize: 13, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 8 }}>
               <AlertCircle size={16} color="#EF4444" />
               {error}
             </div>
@@ -237,7 +236,7 @@ export default function Dashboard() {
           padding: '32px 24px', flexShrink: 0
         }} className="hidden xl:block">
           <h2 style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 20 }}>Live Activity Log</h2>
-          
+
           {activities.length === 0 ? (
             <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Waiting for activity...</p>
           ) : (
@@ -246,9 +245,9 @@ export default function Dashboard() {
                 <div key={act.id} className="anim-fade-up" style={{ animationDelay: `${act.id * 80}ms`, display: 'flex', gap: 12 }}>
                   <div style={{ marginTop: 4 }}>
                     {act.id === 0 ? (
-                      <span style={{ position:'relative', display:'block', width:6, height:6 }}>
-                        <span style={{ position:'absolute', inset:0, borderRadius:'50%', background:'#10B981', opacity:0.4, animation:'ping-dot 1.4s cubic-bezier(0,0,0.2,1) infinite' }} />
-                        <span style={{ position:'relative', width:6, height:6, borderRadius:'50%', background:'#10B981', display:'block' }} />
+                      <span style={{ position: 'relative', display: 'block', width: 6, height: 6 }}>
+                        <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: '#10B981', opacity: 0.4, animation: 'ping-dot 1.4s cubic-bezier(0,0,0.2,1) infinite' }} />
+                        <span style={{ position: 'relative', width: 6, height: 6, borderRadius: '50%', background: '#10B981', display: 'block' }} />
                       </span>
                     ) : (
                       <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--text-muted)' }} />

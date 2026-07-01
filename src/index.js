@@ -10,13 +10,14 @@ const settingsRouter = require('./routes/settings');
 const db = require('./services/database');
 const { startScheduler } = require('./services/scheduler');
 const { startEmailParser } = require('./services/emailParser');
-
+const { router: authRouter } = require('./routes/auth');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use('/api/auth', authRouter);
 
 const leadsCache = { data: [] };
 const appointments = [];
