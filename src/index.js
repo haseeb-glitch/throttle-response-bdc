@@ -9,6 +9,7 @@ const analyticsRouter = require('./routes/analytics');
 const settingsRouter = require('./routes/settings');
 const db = require('./services/database');
 const { startScheduler } = require('./services/scheduler');
+const { startEmailParser } = require('./services/emailParser');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -17,7 +18,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Wrapper object — leadsCache.data hamesha latest leads rakhega
 const leadsCache = { data: [] };
 const appointments = [];
 
@@ -43,5 +43,6 @@ app.get('/', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  startScheduler(); // Re-engagement scheduler start karo
+  startScheduler();
+  startEmailParser();
 });
