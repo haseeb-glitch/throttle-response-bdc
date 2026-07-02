@@ -203,31 +203,34 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* Grid */}
-          {loading ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 20 }}>
-              {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
-            </div>
-          ) : filteredLeads.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '80px 20px', border: '1px solid var(--border)', borderRadius: 8 }}>
-              <div style={{ color: 'var(--text-muted)', marginBottom: 16, display: 'flex', justifyContent: 'center' }}><Users size={32} /></div>
-              <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8, color: 'var(--text-primary)' }}>No leads yet</h2>
-              <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 24 }}>
-                {filter !== 'all' ? 'No leads match this filter.' : 'Add your first lead to get started.'}
-              </p>
-              {filter === 'all' && (
-                <button onClick={() => setShowModal(true)} className="btn-primary">
-                  + Add First Lead
-                </button>
-              )}
-            </div>
-          ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 20 }}>
-              {filteredLeads.map((lead, i) => (
-                <LeadCard key={lead.id} lead={lead} index={i} />
-              ))}
-            </div>
-          )}
+          {/* Grid - sirf top 2 */}
+{loading ? (
+  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 20 }}>
+    {Array.from({ length: 2 }).map((_, i) => <SkeletonCard key={i} />)}
+  </div>
+) : filteredLeads.length === 0 ? (
+  <div style={{ textAlign: 'center', padding: '80px 20px', border: '1px solid var(--border)', borderRadius: 8 }}>
+    <div style={{ color: 'var(--text-muted)', marginBottom: 16, display: 'flex', justifyContent: 'center' }}><Users size={32} /></div>
+    <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8, color: 'var(--text-primary)' }}>No leads yet</h2>
+    <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 24 }}>Add your first lead to get started.</p>
+    <button onClick={() => setShowModal(true)} className="btn-primary">+ Add First Lead</button>
+  </div>
+) : (
+  <>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 20 }}>
+      {filteredLeads.slice(0, 2).map((lead, i) => (
+        <LeadCard key={lead.id} lead={lead} index={i} />
+      ))}
+    </div>
+    {filteredLeads.length > 2 && (
+      <div style={{ textAlign: 'center', marginTop: 24 }}>
+        <a href="/leads" style={{ fontSize: 14, color: '#F97316', fontWeight: 500, textDecoration: 'none' }}>
+          View all {filteredLeads.length} leads →
+        </a>
+      </div>
+    )}
+  </>
+)}
         </main>
 
         {/* Right Sidebar - Activity Feed */}
