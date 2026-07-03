@@ -6,6 +6,7 @@ import {
 } from 'recharts'
 import { Users, MessageSquare, AlertCircle, BarChart2, PauseCircle, TrendingUp } from 'lucide-react'
 import Sidebar from '../components/Sidebar'
+import Header from '../components/Header'
 
 const TIER_COLORS = {
   cold:  '#93C5FD',
@@ -102,13 +103,13 @@ export default function Analytics() {
 
           <div style={{ marginBottom: 28 }}>
             <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>Analytics</h1>
-            <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>Jake's performance and lead pipeline health — live session data</p>
+            <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>Pablo's performance and lead pipeline health — live session data</p>
           </div>
 
           {/* Stat cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 24 }}>
             <StatCard label="Total Leads"     value={data.totalLeads}          icon={Users}          accent="var(--text-muted)" />
-            <StatCard label="Jake Messages"   value={data.jakeMessages}        icon={MessageSquare}  accent="var(--text-muted)" />
+            <StatCard label="Pablo Messages"   value={data.PabloMessages}        icon={MessageSquare}  accent="var(--text-muted)" />
             <StatCard label="Priority Alerts" value={data.priorityCount}       sub={`${data.priorityRate}% of leads`} icon={AlertCircle} accent="#EF4444" />
             <StatCard label="Avg Score"       value={data.avgScore}            icon={BarChart2}      accent="var(--text-muted)" />
             <StatCard label="Manual Takeover" value={data.manualTakeoverCount} sub="leads paused"    icon={PauseCircle}    accent="#D97706" />

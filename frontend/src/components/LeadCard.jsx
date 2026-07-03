@@ -29,7 +29,7 @@ export default function LeadCard({ lead, index }) {
               )}
               {lead.manualTakeover && (
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#FFFBEB', color: '#D97706', border: '1px solid #FDE68A', fontSize: 11, borderRadius: 99, padding: '2px 8px', fontWeight: 500 }}>
-                  <PauseCircle size={11} /> Jake Paused
+                  <PauseCircle size={11} /> Pablo Paused
                 </span>
               )}
             </div>

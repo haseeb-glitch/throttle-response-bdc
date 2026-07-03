@@ -9,7 +9,7 @@ const DEFAULT_SETTINGS = {
     location: 'Georgia'
   },
   persona: {
-    agentName: 'Jake',
+    agentName: 'Pablo',
     tone: 'casual'   // 'professional' | 'casual' | 'high-energy'
   },
   operatingHours: {

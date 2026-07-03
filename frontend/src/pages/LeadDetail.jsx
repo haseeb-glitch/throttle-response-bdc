@@ -162,7 +162,7 @@ export default function LeadDetail() {
             }}
           >
             {lead.manualTakeover
-              ? <><PlayCircle size={15} /> Resume Jake</>           
+              ? <><PlayCircle size={15} /> Resume Pablo</>           
               : <><PauseCircle size={15} /> Take Over</>}
           </button>
         </div>
@@ -176,7 +176,7 @@ export default function LeadDetail() {
         }}>
           <PauseCircle size={15} color="#D97706" />
           <span style={{ fontSize: 13, fontWeight: 500, color: '#92400E' }}>
-            You are in control — Jake will not respond to this lead until you resume.
+            You are in control — Pablo will not respond to this lead until you resume.
           </span>
         </div>
       )}

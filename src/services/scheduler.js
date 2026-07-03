@@ -2,7 +2,7 @@ const db = require('./database');
 const { generateResponse, shouldRespond } = require('./ai');
 const { sendSMS } = require('./sms');
 
-// Casual follow-up prompts — Jake re-engages naturally, no pressure
+// Casual follow-up prompts — Pablo re-engages naturally, no pressure
 const FOLLOWUP_3HR_PROMPTS = [
   "Hey, just wanted to make sure my last message came through okay — happy to help with whatever you need.",
   "Hey, still around? No rush at all, just wanted to check in.",

@@ -27,7 +27,7 @@ function Field({ label, hint, children }) {
 }
 
 const TONE_OPTIONS = [
-  { value: 'casual', label: 'Casual', desc: 'Relaxed, rider-to-rider. Like Jake texting a buddy about bikes.' },
+  { value: 'casual', label: 'Casual', desc: 'Relaxed, rider-to-rider. Like Pablo texting a buddy about bikes.' },
   { value: 'professional', label: 'Professional', desc: 'Polished and confident. Still warm, but more formal.' },
   { value: 'high-energy', label: 'High-Energy', desc: 'Enthusiastic, urgent, always closing. Great for hot leads.' },
 ]
@@ -110,7 +110,7 @@ export default function Settings() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
             <div>
               <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>Settings</h1>
-              <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>Configure Jake's persona and dealership details</p>
+              <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>Configure Pablo's persona and dealership details</p>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               {saved && <span style={{ fontSize: 13, color: '#10B981', display: 'flex', alignItems: 'center', gap: 4 }}><CheckCircle size={14} /> Saved</span>}
@@ -137,12 +137,12 @@ export default function Settings() {
             </Field>
           </Section>
 
-          {/* Jake Persona */}
-          <Section title="Jake's Persona" icon={User}>
-            <Field label="Agent Name" hint="The name Jake uses when texting leads.">
+          {/* Pablo Persona */}
+          <Section title="Pablo's Persona" icon={User}>
+            <Field label="Agent Name" hint="The name Pablo uses when texting leads.">
               <input className="input-base" style={{ width: '100%' }} value={persona.agentName} onChange={e => update('persona', 'agentName', e.target.value)} />
             </Field>
-            <Field label="Tone" hint="Adjusts how Jake communicates. Casual is the default.">
+            <Field label="Tone" hint="Adjusts how Pablo communicates. Casual is the default.">
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {TONE_OPTIONS.map(opt => (
                   <label key={opt.value} style={{
@@ -164,7 +164,7 @@ export default function Settings() {
 
           {/* Operating Hours */}
           <Section title="Operating Hours" icon={Clock}>
-            <Field label="Active Hours" hint="Jake only sends messages during these hours (Eastern Time).">
+            <Field label="Active Hours" hint="Pablo only sends messages during these hours (Eastern Time).">
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div style={{ flex: 1 }}>
                   <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Start</p>

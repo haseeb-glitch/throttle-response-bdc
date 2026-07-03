@@ -23,9 +23,9 @@ module.exports = function (leads) {
       distribution[bucket].count++;
     });
 
-    let jakeMessages = 0;
+    let PabloMessages = 0;
     data.forEach(l => {
-      jakeMessages += (l.conversation || []).filter(m => m.role === 'assistant').length;
+      PabloMessages += (l.conversation || []).filter(m => m.role === 'assistant').length;
     });
 
     const priorityCount = data.filter(l => l.priority).length;
@@ -70,7 +70,7 @@ module.exports = function (leads) {
       success: true,
       analytics: {
         totalLeads:          data.length,
-        jakeMessages,
+        PabloMessages,
         priorityCount,
         priorityRate,
         avgScore,

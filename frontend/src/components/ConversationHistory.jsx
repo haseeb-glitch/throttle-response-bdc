@@ -32,7 +32,7 @@ export default function ConversationHistory({ conversation = [] }) {
             </div>
 
             <div style={{ maxWidth: '75%' }}>
-              <div className={isUser ? 'bubble-customer' : 'bubble-jake'} style={{ padding: '10px 14px', fontSize: 14, lineHeight: 1.55 }}>
+              <div className={isUser ? 'bubble-customer' : 'bubble-Pablo'} style={{ padding: '10px 14px', fontSize: 14, lineHeight: 1.55 }}>
                 {msg.content}
               </div>
               <p style={{

@@ -115,7 +115,7 @@ export default function Dashboard() {
 
   const activities = leads.slice(0, 5).map((l, i) => ({
     id: i,
-    text: l.lastAiAction ? `Jake messaged ${l.name}` : `New lead added: ${l.name}`,
+    text: l.lastAiAction ? `Pablo messaged ${l.name}` : `New lead added: ${l.name}`,
     time: l.lastContactTime,
     hasAction: !!l.lastAiAction
   }))

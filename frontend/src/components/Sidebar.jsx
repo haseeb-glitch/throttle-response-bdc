@@ -118,7 +118,7 @@ export default function Sidebar({ priorityCount = 0, manualTakeoverCount = 0 }) 
             width: 8, height: 8, borderRadius: '50%', background: '#10B981',
             boxShadow: '0 0 0 2px rgba(16,185,129,0.25)'
           }} />
-          <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Jake is active</span>
+          <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Pablo is active</span>
         </div>
       </div>
     </aside>

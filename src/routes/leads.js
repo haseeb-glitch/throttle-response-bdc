@@ -165,7 +165,7 @@ router.post('/:id/message', async (req, res) => {
       res.json({
         success: true,
         aiResponse: null,
-        message: 'Manual takeover active — Jake is paused',
+        message: 'Manual takeover active — Pablo is paused',
         manualTakeover: true,
         lead: updatedLead
       });
@@ -193,8 +193,8 @@ router.patch('/:id/takeover', async (req, res) => {
 
     lead.manualTakeover = !lead.manualTakeover;
     lead.lastAiAction = lead.manualTakeover
-      ? 'Manual takeover active — Jake is paused.'
-      : 'Jake resumed — AI responding again.';
+      ? 'Manual takeover active — Pablo is paused.'
+      : 'Pablo resumed — AI responding again.';
 
     const updatedLead = await db.updateLead(lead.id, lead);
     res.json({ success: true, manualTakeover: updatedLead.manualTakeover, lead: updatedLead });
