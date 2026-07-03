@@ -26,7 +26,13 @@ function toDbFormat(lead) {
     followup_5hr_sent: lead.followup5hrSent,
     conversation: lead.conversation,
     created_at: lead.createdAt,
-    last_contact_time: lead.lastContactTime
+    last_contact_time: lead.lastContactTime,
+    followup_day2_count: lead.followupDay2Count || 0,
+    followup_day3_sent: lead.followupDay3Sent || false,
+    followup_day5_sent: lead.followupDay5Sent || false,
+    followup_day7_sent: lead.followupDay7Sent || false,
+    nurture_mode: lead.nurtureMode || false,
+    last_followup_date: lead.lastFollowupDate || null,
   };
 }
 
@@ -51,7 +57,13 @@ function fromDbFormat(row) {
     followup5hrSent: row.followup_5hr_sent,
     conversation: row.conversation,
     createdAt: row.created_at,
-    lastContactTime: row.last_contact_time
+    lastContactTime: row.last_contact_time,
+    followupDay2Count: row.followup_day2_count,
+    followupDay3Sent: row.followup_day3_sent,
+    followupDay5Sent: row.followup_day5_sent,
+    followupDay7Sent: row.followup_day7_sent,
+    nurtureMode: row.nurture_mode,
+    lastFollowupDate: row.last_followup_date,
   };
 }
 
