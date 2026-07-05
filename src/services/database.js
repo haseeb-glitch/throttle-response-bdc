@@ -33,6 +33,9 @@ function toDbFormat(lead) {
     followup_day7_sent: lead.followupDay7Sent || false,
     nurture_mode: lead.nurtureMode || false,
     last_followup_date: lead.lastFollowupDate || null,
+    stock_number: lead.stockNumber || null,
+    vin: lead.vin || null,
+    model_code: lead.modelCode || null,
   };
 }
 
@@ -64,6 +67,9 @@ function fromDbFormat(row) {
     followupDay7Sent: row.followup_day7_sent,
     nurtureMode: row.nurture_mode,
     lastFollowupDate: row.last_followup_date,
+    stockNumber: row.stock_number,
+    vin: row.vin,
+    modelCode: row.model_code,
   };
 }
 

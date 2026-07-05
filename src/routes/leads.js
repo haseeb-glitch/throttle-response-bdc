@@ -20,7 +20,7 @@ router.get('/', async (req, res) => {
 // Add new lead
 router.post('/', async (req, res) => {
   try {
-    const { name, phone, email, bikeInterest, initialMessage } = req.body;
+    const { name, phone, email, bikeInterest, initialMessage, stockNumber, vin, modelCode } = req.body;
 
     if (!name || !phone) {
       return res.status(400).json({ success: false, message: 'Name and phone required' });
@@ -32,6 +32,9 @@ router.post('/', async (req, res) => {
       phone,
       email: email || null,
       bikeInterest: bikeInterest || null,
+      stockNumber: stockNumber || null,
+      vin: vin || null,
+      modelCode: modelCode || null,
       score: 0,
       scoreColor: getScoreColor(0),
       priority: false,
