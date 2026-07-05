@@ -64,6 +64,39 @@ function parseLeadFromEmail(subject, text, html) {
     if (match) { lead.bikeInterest = match[0].trim(); break; }
   }
 
+  // Stock number extract karo
+  const stockPatterns = [
+    /(?:Stock|Stock #|Stock Number|STK)[\s:#]+([A-Z0-9\-]{4,20})/i,
+    /(?:Stock)[\s:]+#?([A-Z0-9\-]{4,20})/i
+  ];
+  let stockNumber = null;
+  for (const pattern of stockPatterns) {
+    const match = content.match(pattern);
+    if (match) { stockNumber = match[1].trim(); break; }
+  }
+
+  // VIN extract karo
+  const vinPatterns = [
+    /(?:VIN|V\.I\.N)[\s:#]+([A-HJ-NPR-Z0-9]{17})/i,
+    /([A-HJ-NPR-Z0-9]{17})/
+  ];
+  let vin = null;
+  for (const pattern of vinPatterns) {
+    const match = content.match(pattern);
+    if (match) { vin = match[1].trim(); break; }
+  }
+
+  // Model code extract karo
+  const modelCodePatterns = [
+    /(?:Model Code|Code|Model)[\s:#]+([A-Z0-9]{4,10})/i,
+    /\b(FLHX|FLTRX|FLHCS|FLHR|FLHTK|FXLRS|FXBBS|FXFBS|FXST|RA1250S|RH1250S)\b/i
+  ];
+  let modelCode = null;
+  for (const pattern of modelCodePatterns) {
+    const match = content.match(pattern);
+    if (match) { modelCode = match[1].trim(); break; }
+  }
+
   // Initial message / comments extract karo
   const messagePatterns = [
     /(?:Comments|Message|Notes|Inquiry)[\s:]+([^\n<]{10,300})/i,
@@ -79,7 +112,16 @@ function parseLeadFromEmail(subject, text, html) {
     lead.initialMessage = `I'm interested in the ${lead.bikeInterest}. Please contact me with more information.`;
   }
 
-  return lead;
+  return {
+    name: lead.name,
+    phone: lead.phone,
+    email: lead.email,
+    bikeInterest: lead.bikeInterest,
+    initialMessage: lead.initialMessage,
+    stockNumber,
+    vin,
+    modelCode
+  };
 }
 
 async function processEmail(parsed) {
@@ -125,6 +167,9 @@ async function processEmail(parsed) {
       phone: leadInfo.phone,
       email: leadInfo.email || null,
       bikeInterest: leadInfo.bikeInterest || null,
+      stockNumber: leadInfo.stockNumber || null,
+      vin: leadInfo.vin || null,
+      modelCode: leadInfo.modelCode || null,
       score: 0,
       scoreColor: getScoreColor(0),
       priority: false,
