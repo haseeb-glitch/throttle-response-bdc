@@ -421,7 +421,16 @@ export default function LeadDetail() {
           </div>
 
           {/* Input section — takeover mode pe depend karta hai */}
-          <div style={{ borderTop: '1px solid var(--border)', paddingTop: 20 }}>
+          <div style={{ 
+            borderTop: '1px solid var(--border)', 
+            paddingTop: 20,
+            margin: '0 -24px -24px',
+            padding: '20px 24px 24px',
+            background: lead.manualTakeover ? 'rgba(124,58,237,0.08)' : 'transparent',
+            borderTop: lead.manualTakeover ? '2px solid #7C3AED' : '1px solid var(--border)',
+            borderRadius: '0 0 8px 8px',
+            transition: 'all 0.3s ease'
+          }}>
             {lead.manualTakeover ? (
               <>
                 <p style={{ fontSize: 11, color: '#D97706', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.06em', display: 'flex', alignItems: 'center', gap: 6 }}>

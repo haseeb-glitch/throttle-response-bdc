@@ -128,10 +128,65 @@ async function updateLead(id, updates) {
   return fromDbFormat(data);
 }
 
+async function createAppointment(appointment) {
+  const { data, error } = await supabase
+    .from('appointments')
+    .insert([{
+      id: appointment.id,
+      lead_id: appointment.leadId,
+      lead_name: appointment.leadName,
+      date: appointment.date,
+      time: appointment.time,
+      notes: appointment.notes || '',
+      status: appointment.status || 'scheduled'
+    }])
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+async function getAllAppointments() {
+  const { data, error } = await supabase
+    .from('appointments')
+    .select('*')
+    .order('date', { ascending: true });
+
+  if (error) throw error;
+  return data;
+}
+
+async function updateAppointment(id, updates) {
+  const { data, error } = await supabase
+    .from('appointments')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+async function deleteAppointment(id) {
+  const { error } = await supabase
+    .from('appointments')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw error;
+  return true;
+}
+
 module.exports = {
   createLead,
   getAllLeads,
   getLeadById,
   getLeadByPhone,
-  updateLead
+  updateLead,
+  createAppointment,
+  getAllAppointments,
+  updateAppointment,
+  deleteAppointment
 };

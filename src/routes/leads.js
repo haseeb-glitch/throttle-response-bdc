@@ -2,6 +2,7 @@ const express = require('express');
 const { generateResponse, shouldRespond, getFirstResponseDelay } = require('../services/ai');
 const { calculateScore, checkPriorityFlag, getScoreColor } = require('../services/scoring');
 const { sendSMS, sendDelayedSMS } = require('../services/sms');
+const { detectAndCreateAppointment } = require('../services/appointmentDetector');
 const db = require('../services/database');
 
 const router = express.Router();
@@ -83,6 +84,8 @@ router.post('/', async (req, res) => {
           lead.priorityReasons = priorityResult.reasons;
 
           sendDelayedSMS(lead.phone, aiResponse, delay);
+          // Appointment auto-detect karo
+          await detectAndCreateAppointment(lead, aiResponse);
 
         } catch (err) {
           console.error('AI response error:', err.message);
@@ -155,6 +158,8 @@ router.post('/:id/message', async (req, res) => {
         lead.priorityReasons = priorityResult.reasons;
 
         await sendSMS(lead.phone, aiResponse);
+        // Appointment auto-detect karo
+        await detectAndCreateAppointment(lead, aiResponse);
 
         const updatedLead = await db.updateLead(lead.id, lead);
         res.json({ success: true, aiResponse, lead: updatedLead });
