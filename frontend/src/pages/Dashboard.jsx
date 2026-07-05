@@ -4,9 +4,9 @@ import { leadsApi, authApi } from '../api/leads'
 import LeadCard from '../components/LeadCard'
 import AddLeadModal from '../components/AddLeadModal'
 import Sidebar from '../components/Sidebar'
+import Header from '../components/Header'
 import { timeAgo } from '../utils/helpers'
-import { Users, AlertCircle, Flame, BarChart2, Plus, Sun, Moon, LogOut } from 'lucide-react'
-import { useTheme } from '../hooks/useTheme'
+import { Users, AlertCircle, Flame, BarChart2 } from 'lucide-react'
 
 const POLL_INTERVAL = 30000
 
@@ -56,16 +56,7 @@ export default function Dashboard() {
   const [showModal, setShowModal] = useState(false)
   const [filter, setFilter] = useState('all')
   const [lastUpdated, setLastUpdated] = useState(null)
-  const { theme, toggleTheme } = useTheme()
   const navigate = useNavigate()
-
-  function handleLogout() {
-    localStorage.removeItem('trbdc_token')
-    localStorage.removeItem('trbdc_auth')
-    localStorage.removeItem('trbdc_user')
-    localStorage.removeItem('trbdc_role')
-    navigate('/login')
-  }
 
   const fetchLeads = useCallback(async (silent = false) => {
     if (!silent) setLoading(true)
@@ -121,48 +112,10 @@ export default function Dashboard() {
   }))
 
   return (
-    <>
-      {/* Header */}
-      <header style={{
-        position: 'sticky', top: 0, zIndex: 40,
-        background: 'var(--bg-header)',
-        borderBottom: '1px solid var(--border)',
-      }}>
-        <div style={{ margin: '0 auto', padding: '12px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{
-              width: 32, height: 32, borderRadius: 6,
-              background: '#F97316',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#fff', fontSize: 16, fontWeight: 700
-            }}>T</div>
-            <h1 style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.1 }}>
-              ThrottleResponseBDC
-            </h1>
-          </div>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: 'var(--bg-app)' }}>
+      <Header showAddLead={true} onAddLead={() => setShowModal(true)} priorityCount={priorityCount} />
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            {priorityCount > 0 && (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#EF4444', fontSize: 12, fontWeight: 500, borderRadius: 6 }}>
-                <AlertCircle size={14} />
-                {priorityCount} Alert{priorityCount !== 1 ? 's' : ''}
-              </span>
-            )}
-            <button onClick={toggleTheme} className="btn-ghost" style={{ padding: '8px 10px' }} title="Toggle theme">
-              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-            </button>
-            <button onClick={() => setShowModal(true)} className="btn-primary">
-              <Plus size={16} /> Add Lead
-            </button>
-            <button onClick={handleLogout} className="btn-ghost" style={{ padding: '8px 10px' }} title="Logout">
-              <LogOut size={16} />
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* 3-Column Layout */}
-      <div style={{ display: 'flex', minHeight: 'calc(100vh - 70px)', position: 'relative', zIndex: 1 }}>
+      <div style={{ display: 'flex', flex: 1 }}>
 
         {/* Left Sidebar */}
         <Sidebar priorityCount={priorityCount} manualTakeoverCount={manualTakeoverCount} />
@@ -272,7 +225,7 @@ export default function Dashboard() {
       </div>
 
       {showModal && <AddLeadModal onClose={() => setShowModal(false)} onAdded={l => setLeads(p => [l, ...p])} />}
-    </>
+    </div>
   )
 }
 

@@ -3,6 +3,7 @@ import { appointmentsApi } from '../api/appointments'
 import { leadsApi } from '../api/leads'
 import { Calendar, Plus, X, Check, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react'
 import Sidebar from '../components/Sidebar'
+import Header from '../components/Header'
 
 const STATUS_STYLES = {
   scheduled: { color: '#3B82F6', bg: 'rgba(59,130,246,0.12)', label: 'Scheduled' },
@@ -172,83 +173,86 @@ export default function Appointments() {
     .slice(0, 10)
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-app)' }}>
-      <Sidebar />
-      <main style={{ flex: 1, padding: '32px', minWidth: 0, overflowY: 'auto' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
-            <div>
-              <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>Appointments</h1>
-              <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>Schedule and manage in-store visits</p>
-            </div>
-            <button onClick={() => setShowModal(true)} className="btn-primary">
-              <Plus size={16} /> Schedule Appointment
-            </button>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 24, alignItems: 'start' }}>
-            <div className="card" style={{ padding: 24 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-                <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>{MONTH_NAMES[month]} {year}</h2>
-                <div style={{ display: 'flex', gap: 4 }}>
-                  <button onClick={prevMonth} className="btn-ghost" style={{ padding: '6px 8px', border: 'none' }}><ChevronLeft size={16} /></button>
-                  <button onClick={nextMonth} className="btn-ghost" style={{ padding: '6px 8px', border: 'none' }}><ChevronRight size={16} /></button>
-                </div>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: 'var(--bg-app)' }}>
+      <Header />
+      <div style={{ display: 'flex', flex: 1 }}>
+        <Sidebar />
+        <main style={{ flex: 1, padding: '32px', minWidth: 0, overflowY: 'auto' }}>
+          <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
+              <div>
+                <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>Appointments</h1>
+                <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>Schedule and manage in-store visits</p>
               </div>
-              {loading ? (
-                <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid var(--border)', borderTopColor: '#F97316', animation: 'spin 1s linear infinite' }} />
-                </div>
-              ) : (
-                <CalendarGrid year={year} month={month} appointments={appointments} onDayClick={() => setShowModal(true)} />
-              )}
+              <button onClick={() => setShowModal(true)} className="btn-primary">
+                <Plus size={16} /> Schedule Appointment
+              </button>
             </div>
 
-            <div className="card" style={{ padding: 20 }}>
-              <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 16 }}>
-                Upcoming ({upcoming.length})
-              </p>
-              {upcoming.length === 0 ? (
-                <p style={{ fontSize: 13, color: 'var(--text-muted)', padding: '16px 0' }}>No upcoming appointments.</p>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {upcoming.map(a => {
-                    const s = STATUS_STYLES[a.status] || STATUS_STYLES.scheduled
-                    return (
-                      <div key={a.id} style={{ padding: 14, border: '1px solid var(--border)', borderRadius: 8, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                          <div>
-                            <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{a.leadName}</p>
-                            <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
-                              <Calendar size={11} /> {a.date} at {a.time}
-                            </p>
-                          </div>
-                          <span style={{ fontSize: 11, fontWeight: 500, color: s.color, background: s.bg, padding: '2px 8px', borderRadius: 99 }}>{s.label}</span>
-                        </div>
-                        {a.notes && <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>{a.notes}</p>}
-                        <div style={{ display: 'flex', gap: 6 }}>
-                          {a.status === 'scheduled' && (
-                            <button onClick={() => handleStatusChange(a.id, 'confirmed')} className="btn-ghost" style={{ fontSize: 11, padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4 }}>
-                              <Check size={11} /> Confirm
-                            </button>
-                          )}
-                          {a.status !== 'completed' && (
-                            <button onClick={() => handleStatusChange(a.id, 'completed')} className="btn-ghost" style={{ fontSize: 11, padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4 }}>Done</button>
-                          )}
-                          <button onClick={() => handleDelete(a.id)} className="btn-ghost" style={{ fontSize: 11, padding: '3px 8px', marginLeft: 'auto', color: '#EF4444', display: 'flex', alignItems: 'center', gap: 4 }}>
-                            <Trash2 size={11} />
-                          </button>
-                        </div>
-                      </div>
-                    )
-                  })}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 24, alignItems: 'start' }}>
+              <div className="card" style={{ padding: 24 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                  <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>{MONTH_NAMES[month]} {year}</h2>
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    <button onClick={prevMonth} className="btn-ghost" style={{ padding: '6px 8px', border: 'none' }}><ChevronLeft size={16} /></button>
+                    <button onClick={nextMonth} className="btn-ghost" style={{ padding: '6px 8px', border: 'none' }}><ChevronRight size={16} /></button>
+                  </div>
                 </div>
-              )}
+                {loading ? (
+                  <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid var(--border)', borderTopColor: '#F97316', animation: 'spin 1s linear infinite' }} />
+                  </div>
+                ) : (
+                  <CalendarGrid year={year} month={month} appointments={appointments} onDayClick={() => setShowModal(true)} />
+                )}
+              </div>
+
+              <div className="card" style={{ padding: 20 }}>
+                <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 16 }}>
+                  Upcoming ({upcoming.length})
+                </p>
+                {upcoming.length === 0 ? (
+                  <p style={{ fontSize: 13, color: 'var(--text-muted)', padding: '16px 0' }}>No upcoming appointments.</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {upcoming.map(a => {
+                      const s = STATUS_STYLES[a.status] || STATUS_STYLES.scheduled
+                      return (
+                        <div key={a.id} style={{ padding: 14, border: '1px solid var(--border)', borderRadius: 8, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <div>
+                              <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{a.leadName}</p>
+                              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
+                                <Calendar size={11} /> {a.date} at {a.time}
+                              </p>
+                            </div>
+                            <span style={{ fontSize: 11, fontWeight: 500, color: s.color, background: s.bg, padding: '2px 8px', borderRadius: 99 }}>{s.label}</span>
+                          </div>
+                          {a.notes && <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>{a.notes}</p>}
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            {a.status === 'scheduled' && (
+                              <button onClick={() => handleStatusChange(a.id, 'confirmed')} className="btn-ghost" style={{ fontSize: 11, padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                <Check size={11} /> Confirm
+                              </button>
+                            )}
+                            {a.status !== 'completed' && (
+                              <button onClick={() => handleStatusChange(a.id, 'completed')} className="btn-ghost" style={{ fontSize: 11, padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4 }}>Done</button>
+                            )}
+                            <button onClick={() => handleDelete(a.id)} className="btn-ghost" style={{ fontSize: 11, padding: '3px 8px', marginLeft: 'auto', color: '#EF4444', display: 'flex', alignItems: 'center', gap: 4 }}>
+                              <Trash2 size={11} />
+                            </button>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </main>
-      {showModal && <Modal onClose={() => setShowModal(false)} leads={leads} onSaved={appt => setAppointments(prev => [...prev, appt])} />}
+        </main>
+        {showModal && <Modal onClose={() => setShowModal(false)} leads={leads} onSaved={appt => setAppointments(prev => [...prev, appt])} />}
+      </div>
     </div>
   )
 }
