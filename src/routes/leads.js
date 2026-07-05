@@ -208,4 +208,39 @@ router.patch('/:id/takeover', async (req, res) => {
   }
 });
 
+// Manager manual message bheje (takeover mode mein)
+router.post('/:id/manual-message', async (req, res) => {
+  try {
+    const lead = await db.getLeadById(req.params.id);
+    if (!lead) return res.status(404).json({ success: false, message: 'Lead not found' });
+
+    if (!lead.manualTakeover) {
+      return res.status(400).json({ success: false, message: 'Manual takeover not active' });
+    }
+
+    const { message } = req.body;
+    if (!message) return res.status(400).json({ success: false, message: 'Message required' });
+
+    // Conversation mein add karo — role 'manager' taake timeline mein alag dikhe
+    lead.conversation.push({
+      role: 'manager',
+      content: message,
+      timestamp: new Date().toISOString()
+    });
+
+    lead.lastAiAction = `[Manager] ${message}`;
+    lead.lastContactTime = new Date().toISOString();
+
+    // Real SMS bhejo customer ko
+    await sendSMS(lead.phone, message);
+
+    const updatedLead = await db.updateLead(lead.id, lead);
+    res.json({ success: true, lead: updatedLead });
+
+  } catch (err) {
+    console.error('Manual message error:', err.message);
+    res.status(500).json({ success: false, message: 'Failed to send message' });
+  }
+});
+
 module.exports = router;

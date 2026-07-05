@@ -31,11 +31,12 @@ api.interceptors.response.use(
 )
 
 export const leadsApi = {
-  getAll:         ()          => api.get('/api/leads'),
-  getOne:         (id)        => api.get(`/api/leads/${id}`),
-  create:         (data)      => api.post('/api/leads', data),
-  sendMessage:    (id, msg)   => api.post(`/api/leads/${id}/message`, { message: msg }),
-  toggleTakeover: (id)        => api.patch(`/api/leads/${id}/takeover`),
+  getAll:            ()          => api.get('/api/leads'),
+  getOne:            (id)        => api.get(`/api/leads/${id}`),
+  create:            (data)      => api.post('/api/leads', data),
+  sendMessage:       (id, msg)   => api.post(`/api/leads/${id}/message`, { message: msg }),
+  sendManualMessage: (id, msg)   => api.post(`/api/leads/${id}/manual-message`, { message: msg }),
+  toggleTakeover:    (id)        => api.patch(`/api/leads/${id}/takeover`),
 }
 
 export const authApi = {

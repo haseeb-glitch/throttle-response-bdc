@@ -72,6 +72,37 @@ function TimelineEvent({ msg, index, prevScore }) {
     )
   }
 
+  // Manager message
+  if (msg.role === 'manager') {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'row-reverse', gap: 10, marginBottom: 16, alignItems: 'flex-end' }}>
+        <div style={{
+          width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+          background: '#7C3AED',
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <Shield size={14} color="#fff" />
+        </div>
+        <div style={{ maxWidth: '72%' }}>
+          <div style={{
+            padding: '10px 14px',
+            borderRadius: '12px 12px 3px 12px',
+            background: '#7C3AED',
+            fontSize: 14, lineHeight: 1.5, color: '#fff'
+          }}>
+            {msg.content}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4, justifyContent: 'flex-end' }}>
+            <Clock size={10} color="var(--text-muted)" />
+            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+              Manager · {new Date(msg.timestamp).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}
+            </span>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div style={{
       display: 'flex',
@@ -389,21 +420,67 @@ export default function LeadDetail() {
             )}
           </div>
 
-          {/* Divider / footer (simulate reply) */}
-          <div ref={centerFooterRef} style={{ borderTop: '1px solid var(--border)', paddingTop: 20 }}>
-            <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-              Simulate Customer Reply
-            </p>
-            <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: 10 }}>
-              <input
-                type="text" value={message} onChange={e => setMessage(e.target.value)}
-                placeholder="Type customer message..."
-                className="input-base" style={{ flex: 1 }}
-              />
-              <button type="submit" className="btn-primary" disabled={sending || !message.trim()}>
-                {sending ? '...' : 'Send'}
-              </button>
-            </form>
+          {/* Input section — takeover mode pe depend karta hai */}
+          <div style={{ borderTop: '1px solid var(--border)', paddingTop: 20 }}>
+            {lead.manualTakeover ? (
+              <>
+                <p style={{ fontSize: 11, color: '#D97706', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.06em', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Shield size={11} /> Send Manual Message to Customer
+                </p>
+                <form onSubmit={async (e) => {
+                  e.preventDefault()
+                  if (!message.trim()) return
+                  setSending(true)
+                  setSendError(null)
+                  try {
+                    const res = await leadsApi.sendManualMessage(lead.id, message.trim())
+                    setLead(res.data.lead)
+                    setMessage('')
+                  } catch (err) {
+                    setSendError(err.response?.data?.message || 'Failed to send message')
+                  } finally {
+                    setSending(false)
+                  }
+                }} style={{ display: 'flex', gap: 10 }}>
+                  <input
+                    type="text"
+                    value={message}
+                    onChange={e => setMessage(e.target.value)}
+                    placeholder="Type your message to customer..."
+                    className="input-base"
+                    style={{ flex: 1 }}
+                  />
+                  <button type="submit" className="btn-primary" disabled={sending || !message.trim()}>
+                    {sending ? '...' : 'Send'}
+                  </button>
+                </form>
+                <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8 }}>
+                  Message will be sent via Twilio to customer's phone
+                </p>
+              </>
+            ) : (
+              <>
+                <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  Simulate Customer Reply (Testing Only)
+                </p>
+                <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: 10 }}>
+                  <input
+                    type="text"
+                    value={message}
+                    onChange={e => setMessage(e.target.value)}
+                    placeholder="Type customer message to test Pablo..."
+                    className="input-base"
+                    style={{ flex: 1 }}
+                  />
+                  <button type="submit" className="btn-primary" disabled={sending || !message.trim()}>
+                    {sending ? '...' : 'Send'}
+                  </button>
+                </form>
+                <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8 }}>
+                  Pablo will respond automatically
+                </p>
+              </>
+            )}
             {sendError && <p style={{ fontSize: 12, color: '#EF4444', marginTop: 8 }}>{sendError}</p>}
           </div>
         </div>
