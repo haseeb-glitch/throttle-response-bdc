@@ -6,6 +6,8 @@ import Appointments from './pages/Appointments'
 import Settings from './pages/Settings'
 import Login from './pages/Login'
 import AllLeads from './pages/AllLeads'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import TermsAndConditions from './pages/TermsAndConditions'
 
 function isAuthenticated() {
   return localStorage.getItem('trbdc_auth') === 'true'
@@ -18,7 +20,12 @@ function ProtectedRoute({ children }) {
 function App() {
   return (
     <Routes>
+      {/* Public routes - no login required */}
       <Route path="/login" element={<Login />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+
+      {/* Protected routes */}
       <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/lead/:id" element={<ProtectedRoute><LeadDetail /></ProtectedRoute>} />
       <Route path="/leads" element={<ProtectedRoute><AllLeads /></ProtectedRoute>} />

@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard, Users, Calendar, BarChart2,
-  Settings, MessageSquare, PauseCircle
+  Settings, FileText
 } from 'lucide-react'
 
 const NAV_SECTIONS = [
@@ -17,8 +17,14 @@ const NAV_SECTIONS = [
   {
     label: 'AI Settings',
     items: [
-      { to: '/settings',     icon: Settings,        label: 'Configuration' },
-      { to: '/sms',          icon: MessageSquare,   label: 'SMS / Twilio'  },
+      { to: '/settings', icon: Settings, label: 'Configuration' },
+    ]
+  },
+  {
+    label: 'Legal',
+    items: [
+      { to: '/privacy-policy',      icon: FileText, label: 'Privacy Policy'      },
+      { to: '/terms-and-conditions', icon: FileText, label: 'Terms & Conditions'  },
     ]
   }
 ]
