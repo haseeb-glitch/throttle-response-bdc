@@ -8,6 +8,7 @@ import Login from './pages/Login'
 import AllLeads from './pages/AllLeads'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import TermsAndConditions from './pages/TermsAndConditions'
+import OptIn from './pages/OptIn'
 
 function isAuthenticated() {
   return localStorage.getItem('trbdc_auth') === 'true'
@@ -24,7 +25,7 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
-
+      <Route path="/opt-in" element={<OptIn />} />
       {/* Protected routes */}
       <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/lead/:id" element={<ProtectedRoute><LeadDetail /></ProtectedRoute>} />

@@ -54,7 +54,7 @@ export default function PrivacyPolicy() {
 
         <section>
           <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 12 }}>5. Data Sharing</h2>
-          <p>We do not sell your personal information to third parties. Your information may be shared with Falcons Fury Harley-Davidson staff for the purpose of fulfilling your inquiry and with service providers (such as Twilio for SMS delivery) solely to operate the platform.</p>
+          <p>We do not sell your personal information to third parties. <strong>Mobile phone numbers and SMS consent information are never shared with third parties or affiliates for marketing purposes.</strong> Your information may be shared with Falcons Fury Harley-Davidson staff for the purpose of fulfilling your inquiry and with service providers (such as Twilio for SMS delivery) solely to operate the platform.</p>
         </section>
 
         <section>
