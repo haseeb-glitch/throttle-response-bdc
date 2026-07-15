@@ -16,10 +16,6 @@ export default function OptIn() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    if (!form.smsConsent) {
-      setError('You must agree to receive SMS messages to submit this form.')
-      return
-    }
     if (!form.phone || form.phone.length < 10) {
       setError('Please enter a valid phone number.')
       return
@@ -123,23 +119,6 @@ export default function OptIn() {
               />
             </div>
 
-            {/* SMS Consent — UNCHECKED BY DEFAULT */}
-            <div style={{ padding: 16, background: '#F9FAFB', border: '1.5px solid #E5E7EB', borderRadius: 8 }}>
-              <label style={{ display: 'flex', alignItems: 'flex-start', gap: 12, cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={form.smsConsent}
-                  onChange={e => set('smsConsent', e.target.checked)}
-                  style={{ marginTop: 2, width: 16, height: 16, flexShrink: 0, accentColor: '#F97316' }}
-                />
-                <span style={{ fontSize: 13, color: '#374151', lineHeight: 1.6 }}>
-                  I agree to receive SMS text messages from Falcons Fury Harley-Davidson regarding my inquiry, appointment reminders, and dealership updates. Message frequency varies. Message & data rates may apply. Reply <strong>STOP</strong> to opt out at any time. Reply <strong>HELP</strong> for help.{' '}
-                  <strong>Consent is not required to purchase any goods or services.</strong>{' '}
-                  Mobile phone numbers and SMS consent are not shared with third parties or affiliates for marketing purposes.
-                </span>
-              </label>
-            </div>
-
             {/* Links */}
             <p style={{ fontSize: 12, color: '#9CA3AF', marginTop: -8 }}>
               By submitting this form you agree to our{' '}
@@ -155,7 +134,7 @@ export default function OptIn() {
               </div>
             )}
 
-            {/* Submit */}
+            {/* Submit button - works WITHOUT SMS consent */}
             <button
               type="submit"
               style={{
@@ -163,13 +142,28 @@ export default function OptIn() {
                 background: '#F97316', color: '#fff',
                 fontWeight: 600, fontSize: 15,
                 border: 'none', borderRadius: 8, cursor: 'pointer',
-                transition: 'background 0.15s'
               }}
-              onMouseEnter={e => e.target.style.background = '#EA580C'}
-              onMouseLeave={e => e.target.style.background = '#F97316'}
             >
               Submit Inquiry
             </button>
+
+            {/* SMS Consent - CLEARLY OPTIONAL, AFTER submit button explanation */}
+            <div style={{ marginTop: 8, padding: 16, background: '#F9FAFB', border: '1.5px solid #E5E7EB', borderRadius: 8 }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 10 }}>
+                📱 Optional: Receive SMS Updates
+              </p>
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: 12, cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={form.smsConsent}
+                  onChange={e => set('smsConsent', e.target.checked)}
+                  style={{ marginTop: 2, width: 16, height: 16, flexShrink: 0, accentColor: '#F97316' }}
+                />
+                <span style={{ fontSize: 13, color: '#374151', lineHeight: 1.6 }}>
+                  <strong>(Optional)</strong> I agree to receive SMS text messages from Falcons Fury Harley-Davidson regarding my inquiry. Message frequency varies. Msg & data rates may apply. Reply <strong>STOP</strong> to opt out. Reply <strong>HELP</strong> for help. <strong>This is completely optional and not required to submit your inquiry.</strong> Mobile phone numbers and SMS consent are not shared with third parties or affiliates for marketing purposes.
+                </span>
+              </label>
+            </div>
 
           </form>
         </div>
