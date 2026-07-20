@@ -1,4 +1,5 @@
 const { createClient } = require('@supabase/supabase-js');
+const { normalizePhone } = require('./phone');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -74,9 +75,10 @@ function fromDbFormat(row) {
 }
 
 async function createLead(lead) {
+  const normalizedLead = { ...lead, phone: normalizePhone(lead.phone) };
   const { data, error } = await supabase
     .from('leads')
-    .insert([toDbFormat(lead)])
+    .insert([toDbFormat(normalizedLead)])
     .select()
     .single();
 
@@ -106,14 +108,26 @@ async function getLeadById(id) {
 }
 
 async function getLeadByPhone(phone) {
+  const normalizedPhone = normalizePhone(phone);
+  if (!normalizedPhone) return null;
+
+  const candidates = [normalizedPhone];
+  if (normalizedPhone.length === 10) {
+    candidates.push(`1${normalizedPhone}`);
+    candidates.push(`+1${normalizedPhone}`);
+  } else if (normalizedPhone.length === 11 && normalizedPhone.startsWith('1')) {
+    candidates.push(normalizedPhone.slice(1));
+    candidates.push(`+${normalizedPhone}`);
+  }
+
   const { data, error } = await supabase
     .from('leads')
     .select('*')
-    .eq('phone', phone)
-    .single();
+    .in('phone', candidates)
+    .limit(1);
 
-  if (error) return null;
-  return fromDbFormat(data);
+  if (error || !data || data.length === 0) return null;
+  return fromDbFormat(data[0]);
 }
 
 async function updateLead(id, updates) {
