@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { parseTwilioWebhook, sendSMS } = require('../services/sms');
+const { normalizePhone } = require('../services/phone');
 const { generateResponse, shouldRespond } = require('../services/ai');
 const { calculateScore, checkPriorityFlag, getScoreColor } = require('../services/scoring');
 const db = require('../services/database');
@@ -12,7 +13,7 @@ router.post('/incoming', async (req, res) => {
 
     console.log(`📩 Incoming SMS from ${from}: ${message}`);
 
-    const cleanPhone = from.replace('+1', '');
+    const cleanPhone = normalizePhone(from);
     const lead = await db.getLeadByPhone(cleanPhone);
 
     if (!lead) {
