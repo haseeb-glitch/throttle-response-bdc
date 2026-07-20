@@ -3,6 +3,7 @@
 // Production mein TWILIO_ENABLED=true karo .env mein
 
 const TWILIO_ENABLED = process.env.TWILIO_ENABLED === 'true';
+const { formatE164 } = require('./phone');
 
 let twilioClient = null;
 
@@ -12,21 +13,23 @@ if (TWILIO_ENABLED) {
 }
 
 async function sendSMS(to, message) {
+  const formattedTo = formatE164(to) || to;
+
   if (!TWILIO_ENABLED) {
     // Mock mode — console mein print karo
     console.log('\n📱 SMS MOCK MODE');
-    console.log(`TO: ${to}`);
+    console.log(`TO: ${formattedTo}`);
     console.log(`FROM: ${process.env.TWILIO_PHONE_NUMBER || '+14041234567'}`);
     console.log(`MESSAGE: ${message}`);
     console.log('─────────────────────────────\n');
-    return { success: true, mock: true, to, message };
+    return { success: true, mock: true, to: formattedTo, message };
   }
 
   try {
     const result = await twilioClient.messages.create({
       body: message,
       from: process.env.TWILIO_PHONE_NUMBER,
-      to: to
+      to: formattedTo
     });
 
     console.log(`✅ SMS sent to ${to} — SID: ${result.sid}`);
