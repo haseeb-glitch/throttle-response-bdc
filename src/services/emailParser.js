@@ -43,7 +43,7 @@ function parseLeadFromEmail(subject, text, html) {
   for (const pattern of phonePatterns) {
     const match = content.match(pattern);
     if (match) {
-      lead.phone = match[1].replace(/[\s\-\(\)\.]/, '').trim();
+      lead.phone = match[1].replace(/[\s\-\(\)\.]/g, '').trim();
       break;
     }
   }
