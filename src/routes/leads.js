@@ -61,7 +61,7 @@ router.post('/', async (req, res) => {
 
       if (canRespond) {
         try {
-          const delay = await getFirstResponseDelay();
+          const delay = await getResponseDelay(45000);
           const aiResponse = await generateResponse(lead.conversation, lead);
 
           lead.conversation.push({
@@ -191,6 +191,20 @@ router.post('/:id/message', async (req, res) => {
   } catch (err) {
     console.error('Message error:', err.message);
     res.status(500).json({ success: false, message: 'Failed to process message' });
+  }
+});
+
+// Delete a lead
+router.delete('/:id', async (req, res) => {
+  try {
+    const lead = await db.getLeadById(req.params.id);
+    if (!lead) return res.status(404).json({ success: false, message: 'Lead not found' });
+
+    await db.deleteLead(req.params.id);
+    res.json({ success: true, message: 'Lead deleted successfully' });
+  } catch (err) {
+    console.error('Delete lead error:', err.message);
+    res.status(500).json({ success: false, message: 'Failed to delete lead' });
   }
 });
 
