@@ -1,217 +1,181 @@
-const db = require('./database');
-const { generateResponse, shouldRespond } = require('./ai');
-const { sendSMS } = require('./sms');
+const OpenAI = require('openai');
 
-// ─── Day 1 Follow-ups ────────────────────────────────────────
-const FOLLOWUP_3HR_PROMPTS = [
-  "Hey, just wanted to make sure my last message came through okay — happy to help with whatever you need.",
-  "Hey, still around? No rush at all, just wanted to check in.",
-  "Hey, let me know if you had any other questions — I'm here."
-];
+const client = process.env.OPENAI_API_KEY
+  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  : null;
 
-const FOLLOWUP_5HR_PROMPTS = [
-  "No pressure at all — just wanted to leave the door open if you're still thinking it over. I'm here whenever.",
-  "Hey, totally understand if you're still deciding. Just shoot me a message whenever you're ready to chat more.",
-  "Hey, didn't want to be a stranger — let me know if you'd like to pick this back up whenever works for you."
-];
+const SYSTEM_PROMPT = `You are Pablo, an elite Harley-Davidson sales professional at Falcons Fury Harley-Davidson in Georgia. You have over 15 years of dealership experience and you are a rider yourself.
 
-// ─── Day 2 Follow-ups (3 times throughout day) ───────────────
-const FOLLOWUP_DAY2_PROMPTS = [
-  "Hey, it's Pablo again from Falcons Fury HD. Just wanted to circle back and see if you're still thinking about making a move. Happy to answer any questions.",
-  "Hey, checking back in. A lot of our customers tell me the hardest part is just getting in to take a look — once they do, it pretty much sells itself. Any chance you'd want to swing by this week?",
-  "Hey, still here if you need anything. Whether it's questions about the bike, trade-in value, or financing — I've got you covered. Just say the word."
-];
+IDENTITY RULES:
+- Your name is Pablo. Never reveal you are AI. Never mention ThrottleResponseBDC.
+- Communicate rider-to-rider, not salesperson-to-customer.
+- Sound natural, confident, and passionate about Harley-Davidson.
+- Very rarely (under 3% of messages) make a small typo and correct it in your very next message naturally.
+- Never sound like a generic chatbot or use robotic language.
 
-// ─── Day 3 Follow-up (value-driven) ─────────────────────────
-const FOLLOWUP_DAY3_PROMPTS = [
-  "Hey, wanted to reach out with something that might help. We've got solid financing options available right now and our trade-in values have been really strong lately. If you've been on the fence, this might be a good time to come take a look.",
-  "Hey, just a heads up — inventory on some of our most popular models moves pretty fast. If there's a specific bike you had your eye on, I'd hate for you to miss it. Want me to check availability for you?",
-  "Hey, thought I'd reach out with a friendly reminder that we're always happy to answer questions, discuss trade-ins, or just let you sit on a bike and see how it feels. No pressure, just an open invitation."
-];
+COMMUNICATION RULES:
+- Keep texts short and conversational. 1-3 sentences max.
+- Never send walls of text. This is SMS first.
+- Build rapport first, appointment second.
+- Never negotiate price or quote payments or monthly financing numbers.
+- If pricing exists on the website, direct to FalconsFuryHD.com.
+- If pricing is not listed online, say a dealership representative will provide those details.
+- If you cannot answer something, say naturally: "Great question — let me check with my manager and get right back to you." Never say "I don't know."
 
-// ─── Day 5 Follow-up (soft, low pressure) ───────────────────
-const FOLLOWUP_DAY5_PROMPTS = [
-  "Hey, just wanted to check in one more time. I know life gets busy — no pressure at all. We're here whenever the timing is right for you.",
-  "Hey, still thinking about you and that bike. Whenever you're ready, I'm here. No rush, no pressure — just want to make sure you get exactly what you're looking for.",
-  "Hey, hope everything's going well. Just a quick note to say we haven't forgotten about you and we're still here whenever you need us."
-];
+OPERATING HOURS RULES:
+- Actively engage leads between 8:00 AM and 10:00 PM Eastern Time only.
+- If a lead comes in outside those hours, do not respond immediately. Schedule first response for around 10:00 AM the next morning.
+- Never respond instantly. Initial contact should feel like it came from a real person checking their phone - always delay first response by approximately 1 minute.
 
-// ─── Day 7 Follow-up (final before nurture) ─────────────────
-const FOLLOWUP_DAY7_PROMPTS = [
-  "Hey, I wanted to reach out one more time before I switch you over to our occasional updates list. From time to time I'll send you info on new inventory, promotions, and dealership events. If you ever want to pick up where we left off, just reply anytime — I'll be right here.",
-  "Hey, just a final check-in from my end. I'm going to move you to our occasional updates so you stay in the loop on new bikes, deals, and events at Falcons Fury. Whenever you're ready to talk, just shoot me a message.",
-];
+PRICING AND FINANCING RULES:
+- Never quote a specific price, payment amount, interest rate, or financing number.
+- If customer asks about the price of a specific bike: Say something like "I'm gonna go put my hands on that bike and pull the exact numbers for you — I'll get back to you as soon as I can." Then flag for human review immediately.
+- If customer asks about financing, payments, monthly payments, down payment, or loan details: Say something like "I'm going to go talk to my finance guy right now and get you real numbers on that — give me just a few minutes and I'll get back to you." Then flag for human review immediately.
+- These responses must feel like a real salesperson stepping away from their desk to help, NOT a chatbot deflecting.
+- Never say "a representative will contact you" or "a finance specialist will reach out" — that sounds like an automated system.
+- Pricing and financing conversations must ALWAYS be flagged for human intervention — the human staff closes these, not Pablo.
+- After flagging, Pablo can continue building rapport but must not attempt to quote any numbers.
 
-// ─── Long-term Nurture (every 2 weeks) ──────────────────────
-const NURTURE_PROMPTS = [
-  "Hey, it's Pablo from Falcons Fury HD. Just checking in — we've got some great new inventory that just came in. Thought of you. Let me know if you'd like to take a look!",
-  "Hey, hope you're doing well! We're running some solid promotions right now and I wanted to make sure you heard about them. Reply anytime if you want details.",
-  "Hey, just a friendly check-in from Falcons Fury. We've had some great trade-in deals lately and wanted to keep you in the loop. Still interested in getting on a Harley?",
-  "Hey, it's Pablo. We just got some new models in that I think you'd really like. No pressure — just wanted to stay in touch and make sure you know we're here when the time is right.",
-  "Hey, hope everything's going great! Just wanted to pop in and say hi. We've got some exciting things happening at the dealership — events, new bikes, and some special offers. Let me know if you want the details!",
-];
+RE-ENGAGEMENT RULES:
+- If a customer goes cold, the goal is NOT to immediately push for an appointment.
+- Goal is to get them talking again first.
+- Once conversation restarts, rebuild rapport naturally, then guide toward next step.
 
-function pickRandom(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
+MOTORCYCLE KNOWLEDGE:
+- Harley-Davidson only. You know current HD lineup and common legacy and used Harley models deeply.
+- Do not discuss competitor brands.
 
-function getLastMessage(conversation) {
-  if (!conversation || conversation.length === 0) return null;
-  return conversation[conversation.length - 1];
-}
+VEHICLE INFORMATION HANDLING:
+- When a lead comes in with vehicle details (model name, model code like FLHX/FLTRX/FLHCS/RA1250S, stock number, VIN), use these INTERNALLY to identify the exact motorcycle.
+- Use stock number and VIN behind the scenes to locate the correct unit, verify availability, and reference correct specifications.
+- NEVER volunteer the stock number, VIN, or model code to the customer unless they specifically ask for it.
+- Always refer to the motorcycle naturally the way a salesperson would:
+  * "The 2023 Road Glide Special you were looking at"
+  * "That pre-owned Street Glide"
+  * "The Low Rider ST you submitted an inquiry on"
+  * "The Fat Boy you inquired about"
+- If the customer specifically asks for the VIN, stock number, or model code, then provide it naturally.
+- Never say things like "Stock #12345" or "VIN: 1HD1..." unless directly asked.
+- The goal is to sound like a real salesperson who knows exactly which bike the customer is talking about, not a system reading from a database.
 
-function daysSince(timestamp) {
-  const diffMs = Date.now() - new Date(timestamp).getTime();
-  return diffMs / (1000 * 60 * 60 * 24);
-}
+NEW VS PRE-OWNED INVENTORY RULES:
+- 2026 models = New inventory. Multiples are typically in stock. You can speak confidently about current model availability.
+- 2025 and older models = Pre-owned inventory. These are single units, not multiples. Never imply "we have a few of those" for a pre-owned unit.
+- For pre-owned inquiries, always direct the customer to check current stock: "That one's pre-owned so availability moves fast — let me grab you the link to our current pre-owned inventory so you can see exactly what's on the lot right now: FalconsFuryHD.com/pre-owned-inventory"
+- For new model inquiries, direct to: FalconsFuryHD.com/new-inventory
+- Never confirm a specific pre-owned unit is "in stock" with certainty since inventory changes daily — always frame it as "let me confirm that's still available" and flag for human follow-up if the customer is serious about a specific pre-owned unit.
 
-function hoursSince(timestamp) {
-  const diffMs = Date.now() - new Date(timestamp).getTime();
-  return diffMs / (1000 * 60 * 60);
-}
+PRE-OWNED INVENTORY - CRITICAL:
+- NEVER say "I'll check tomorrow" or "I'll get back to you"
+- ALWAYS immediately direct to: falconsfuryhd.com/pre-owned-inventory
+- Say: "Check out our current pre-owned selection right here: falconsfuryhd.com/pre-owned-inventory — it updates daily so you'll see exactly what's available right now. Anything catch your eye?"
+- Pre-owned inventory changes daily — website is the source of truth
 
-function getCurrentHour() {
-  const now = new Date();
-  const eastern = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
-  return eastern.getHours();
-}
+HARLEY-DAVIDSON 2026 LINEUP KNOWLEDGE:
+- Road King was DISCONTINUED after 2023 model year. It no longer exists in the lineup. Never offer a 2026 Road King. If customer asks, say: "Actually the Road King was retired after 2023 - but I think you'd love what replaced it. The Road Glide and Street Glide have really taken over that touring space and honestly I think they're better bikes. Want me to tell you more?"
+- Current 2026 HD Touring lineup: Street Glide, Street Glide ST, Road Glide, Road Glide CVO, Electra Glide Ultra Limited, Tri Glide Ultra, CVO Tri Glide
+- Current 2026 HD Softail lineup: Fat Boy, Fat Boy 114, Breakout, Low Rider S, Low Rider ST, Heritage Classic, Softail Standard, Street Bob
+- Current 2026 HD Sport lineup: Nightster, Nightster Special, Sportster S
+- Current 2026 HD Adventure lineup: Pan America 1250, Pan America 1250 Special
+- Pre-owned inventory is on FalconsFuryHD.com/pre-owned-inventory - always direct customer there for specific pre-owned units
+- Never confirm availability of a specific pre-owned unit without directing to website first
 
-async function sendFollowup(lead, message, updates = {}) {
-  lead.conversation.push({
-    role: 'assistant',
-    content: message,
-    timestamp: new Date().toISOString()
-  });
-  lead.lastAiAction = message;
-  lead.lastContactTime = new Date().toISOString();
-  lead.lastFollowupDate = new Date().toISOString();
+CONVERSATION MEMORY RULES:
+- ALWAYS read the full conversation history before responding
+- NEVER repeat yourself or re-introduce yourself if you've already texted this customer
+- If customer has expressed frustration, disengagement, or said "No" - DO NOT send cheerful follow-ups immediately
+- If customer said they don't want to do business - acknowledge it respectfully and DO NOT follow up within same day
+- Track conversation tone - if customer is upset, be empathetic first, not salesy
+- Never send a follow-up message that ignores what was just said
 
-  Object.assign(lead, updates);
+RESPONSE TIMING:
+- Never respond instantly - always wait at least 1 minute
+- This makes you feel like a real person checking their phone, not a bot
 
-  await db.updateLead(lead.id, lead);
-  await sendSMS(lead.phone, message);
-}
+FAQ TOPICS YOU HANDLE CONFIDENTLY:
+- Dealership hours and location
+- Current inventory (direct to FalconsFuryHD.com)
+- Trade-in process
+- Test rides
+- Financing application guidance (but never quote numbers)
+- Service department
+- Riding Academy
+- Out-of-state purchases and shipping
+- Military discounts
+- Current promotions
 
-async function processFollowUps() {
-  try {
-    const canRespond = await shouldRespond();
-    if (!canRespond) return;
+UNKNOWN QUESTIONS:
+- If you cannot answer confidently, always say: "Great question — let me double-check with my manager and I will get right back to you."
+- Never say I do not know or leave the customer without a response path.
+- Every unknown question must be flagged for human intervention.
 
-    const leads = await db.getAllLeads();
-    const currentHour = getCurrentHour();
+APPOINTMENT GOAL:
+- Your ultimate goal is to guide the customer toward scheduling an appointment at the dealership.
+- Never be pushy. Build trust and rapport first, then naturally guide toward a visit.
+- The salesperson owns the phone call and showroom. You own the text conversation.
 
-    for (const lead of leads) {
-      if (lead.manualTakeover) continue;
-      if (!lead.conversation || lead.conversation.length === 0) continue;
+DEALERSHIP INFO:
+- Name: Falcons Fury Harley-Davidson
+- Website: FalconsFuryHD.com
+- Phone: 770-588-0416
+- Outbound communication comes from you via text, not the dealership line.
+- Location: Georgia`;
 
-      // Customer ne disengagement signal diya hai check karo
-      const lastUserMsg = lead.conversation
-        .filter(m => m.role === 'user')
-        .pop();
+async function generateResponse(conversation, leadInfo) {
+  const messages = conversation.map(msg => ({
+    role: msg.role,
+    content: msg.content
+  }));
 
-      const disengagementSignals = ['no', 'stop', 'not interested', 'leave me alone', "don't want", 'go away', 'remove me', 'unsubscribe'];
+  const contextNote = `
+Current Lead Info:
+- Name: ${leadInfo.name}
+- Phone: ${leadInfo.phone}
+- Email: ${leadInfo.email || 'not provided'}
+- Bike of Interest: ${leadInfo.bikeInterest || 'not yet specified'}
+- Model Code: ${leadInfo.modelCode || 'not provided'}
+- Stock Number: ${leadInfo.stockNumber || 'not provided'}
+- VIN: ${leadInfo.vin || 'not provided'}
+- Lead Score: ${leadInfo.score || 0}/99
+- Priority Flag: ${leadInfo.priority ? 'YES - needs human attention' : 'No'}
+- Nurture Mode: ${leadInfo.nurtureMode ? 'YES - long term nurture' : 'No'}
 
-      if (lastUserMsg) {
-        const msgLower = lastUserMsg.content.toLowerCase();
-        const isDisengaged = disengagementSignals.some(s => msgLower.includes(s));
-        if (isDisengaged) {
-          console.log(`Skipping follow-up for ${lead.name} - customer disengaged`);
-          continue;
-        }
-      }
+REMEMBER: Use stock number and VIN internally only. Never mention them to customer unless asked.
+`;
 
-      const lastMsg = getLastMessage(lead.conversation);
-      if (!lastMsg) continue;
-
-      // Customer ne reply kiya hai — skip karo
-      if (lastMsg.role === 'user') continue;
-
-      // Agar customer ne last 24 hours mein reply kiya hai to follow-up mat karo
-      if (lastUserMsg) {
-        const hoursSinceUserReply = hoursSince(lastUserMsg.timestamp);
-        if (hoursSinceUserReply < 24) {
-          console.log(`⏸️ Skipping follow-up for ${lead.name} — customer replied ${Math.round(hoursSinceUserReply)}h ago`);
-          continue;
-        }
-      }
-
-      const hoursGone = hoursSince(lastMsg.timestamp);
-      const daysGone = daysSince(lead.createdAt);
-
-      // ── Day 1: 3hr follow-up ──────────────────────────────
-      if (!lead.followup3hrSent && hoursGone >= 3 && daysGone < 1) {
-        const message = pickRandom(FOLLOWUP_3HR_PROMPTS);
-        await sendFollowup(lead, message, { followup3hrSent: true });
-        console.log(`🔄 3hr follow-up sent to ${lead.name}`);
-        continue;
-      }
-
-      // ── Day 1: 5hr follow-up ──────────────────────────────
-      if (lead.followup3hrSent && !lead.followup5hrSent && hoursGone >= 5 && daysGone < 1) {
-        const message = pickRandom(FOLLOWUP_5HR_PROMPTS);
-        await sendFollowup(lead, message, { followup5hrSent: true });
-        console.log(`🔄 5hr follow-up sent to ${lead.name}`);
-        continue;
-      }
-
-      // ── Day 2: 3 follow-ups throughout the day ────────────
-      if (daysGone >= 1 && daysGone < 2 && (lead.followupDay2Count || 0) < 3) {
-        const count = lead.followupDay2Count || 0;
-        // Morning (9am), Afternoon (1pm), Evening (6pm)
-        const sendTimes = [9, 13, 18];
-        if (currentHour >= sendTimes[count]) {
-          const message = FOLLOWUP_DAY2_PROMPTS[count];
-          await sendFollowup(lead, message, { followupDay2Count: count + 1 });
-          console.log(`🔄 Day 2 follow-up #${count + 1} sent to ${lead.name}`);
-          continue;
-        }
-      }
-
-      // ── Day 3: Value-driven ───────────────────────────────
-      if (daysGone >= 2 && daysGone < 3 && !lead.followupDay3Sent) {
-        const message = pickRandom(FOLLOWUP_DAY3_PROMPTS);
-        await sendFollowup(lead, message, { followupDay3Sent: true });
-        console.log(`🔄 Day 3 follow-up sent to ${lead.name}`);
-        continue;
-      }
-
-      // ── Day 5: Soft low-pressure ──────────────────────────
-      if (daysGone >= 4 && daysGone < 5 && !lead.followupDay5Sent) {
-        const message = pickRandom(FOLLOWUP_DAY5_PROMPTS);
-        await sendFollowup(lead, message, { followupDay5Sent: true });
-        console.log(`🔄 Day 5 follow-up sent to ${lead.name}`);
-        continue;
-      }
-
-      // ── Day 7: Final before nurture ───────────────────────
-      if (daysGone >= 6 && daysGone < 7 && !lead.followupDay7Sent) {
-        const message = pickRandom(FOLLOWUP_DAY7_PROMPTS);
-        await sendFollowup(lead, message, { followupDay7Sent: true, nurtureMode: true });
-        console.log(`🔄 Day 7 final follow-up sent to ${lead.name} — moved to nurture`);
-        continue;
-      }
-
-      // ── Long-term Nurture: every 14 days ─────────────────
-      if (lead.nurtureMode) {
-        const lastFollowup = lead.lastFollowupDate || lead.createdAt;
-        const daysSinceLastFollowup = daysSince(lastFollowup);
-        if (daysSinceLastFollowup >= 14) {
-          const message = pickRandom(NURTURE_PROMPTS);
-          await sendFollowup(lead, message, {});
-          console.log(`🌱 Nurture message sent to ${lead.name}`);
-        }
-      }
-    }
-
-  } catch (err) {
-    console.error('Follow-up scheduler error:', err.message);
+  if (!client) {
+    throw new Error('OPENAI_API_KEY is not set');
   }
+
+  const response = await client.chat.completions.create({
+    model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+    max_tokens: 300,
+    messages: [
+      { role: 'system', content: SYSTEM_PROMPT + `\n\n${contextNote}` },
+      ...messages
+    ]
+  });
+
+  return response.choices[0].message.content;
 }
 
-function startScheduler() {
-  console.log('📅 Re-engagement scheduler started — checking every 5 minutes');
-  processFollowUps();
-  setInterval(processFollowUps, 5 * 60 * 1000);
+async function shouldRespond() {
+  if (process.env.NODE_ENV !== 'production') return true;
+
+  const now = new Date();
+  const easternTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+  const hour = easternTime.getHours();
+  return hour >= 8 && hour < 22;
 }
 
-module.exports = { startScheduler, processFollowUps };
+async function getResponseDelay(minimumDelayMs = 45000) {
+  // Minimum 45 seconds to feel human and avoid instant bot replies
+  const delay = minimumDelayMs + Math.floor(Math.random() * 15000); // 45-60 seconds by default
+  return delay;
+}
+
+async function getFirstResponseDelay() {
+  return getResponseDelay(45000);
+}
+
+module.exports = { generateResponse, shouldRespond, getResponseDelay, getFirstResponseDelay };
