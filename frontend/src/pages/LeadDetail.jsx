@@ -4,7 +4,7 @@ import { leadsApi } from '../api/leads'
 import ScoreGauge from '../components/ScoreGauge'
 import ScoreBreakdown from '../components/ScoreBreakdown'
 import { timeAgo } from '../utils/helpers'
-import { Phone, Mail, ArrowLeft, AlertCircle, PauseCircle, PlayCircle, Bot, User, Clock, TrendingUp, Shield } from 'lucide-react'
+import { Phone, Mail, ArrowLeft, AlertCircle, PauseCircle, PlayCircle, Bot, User, Clock, TrendingUp, Shield, Trash2 } from 'lucide-react'
 import Header from '../components/Header'
 
 function Section({ title, children }) {
@@ -219,6 +219,18 @@ export default function LeadDetail() {
     }
   }
 
+  const handleDeleteLead = async () => {
+    if (!window.confirm('Delete this lead?')) return
+
+    try {
+      await leadsApi.delete(lead.id)
+      navigate('/leads')
+    } catch (err) {
+      console.error('Delete lead failed:', err)
+      setError('Failed to delete lead.')
+    }
+  }
+
   useEffect(() => {
     const fetchLead = async () => {
       try {
@@ -359,6 +371,17 @@ export default function LeadDetail() {
           {lead.manualTakeover
             ? <><PlayCircle size={15} /> Resume Pablo</>
             : <><PauseCircle size={15} /> Take Over</>}
+        </button>
+
+        <button onClick={handleDeleteLead} style={{
+          display: 'inline-flex', alignItems: 'center', gap: 6,
+          padding: '7px 14px', borderRadius: 6, cursor: 'pointer',
+          fontSize: 13, fontWeight: 500,
+          border: '1px solid rgba(239,68,68,0.25)',
+          background: 'rgba(239,68,68,0.08)',
+          color: '#EF4444',
+        }}>
+          <Trash2 size={15} /> Delete
         </button>
       </div>
 
