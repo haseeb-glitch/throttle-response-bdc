@@ -104,11 +104,36 @@ async function processFollowUps() {
       if (lead.manualTakeover) continue;
       if (!lead.conversation || lead.conversation.length === 0) continue;
 
+      // Customer ne disengagement signal diya hai check karo
+      const lastUserMsg = lead.conversation
+        .filter(m => m.role === 'user')
+        .pop();
+
+      const disengagementSignals = ['no', 'stop', 'not interested', 'leave me alone', "don't want", 'go away', 'remove me', 'unsubscribe'];
+
+      if (lastUserMsg) {
+        const msgLower = lastUserMsg.content.toLowerCase();
+        const isDisengaged = disengagementSignals.some(s => msgLower.includes(s));
+        if (isDisengaged) {
+          console.log(`Skipping follow-up for ${lead.name} - customer disengaged`);
+          continue;
+        }
+      }
+
       const lastMsg = getLastMessage(lead.conversation);
       if (!lastMsg) continue;
 
       // Customer ne reply kiya hai — skip karo
       if (lastMsg.role === 'user') continue;
+
+      // Agar customer ne last 24 hours mein reply kiya hai to follow-up mat karo
+      if (lastUserMsg) {
+        const hoursSinceUserReply = hoursSince(lastUserMsg.timestamp);
+        if (hoursSinceUserReply < 24) {
+          console.log(`⏸️ Skipping follow-up for ${lead.name} — customer replied ${Math.round(hoursSinceUserReply)}h ago`);
+          continue;
+        }
+      }
 
       const hoursGone = hoursSince(lastMsg.timestamp);
       const daysGone = daysSince(lead.createdAt);
