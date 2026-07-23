@@ -1,5 +1,5 @@
 const express = require('express');
-const { generateResponse, shouldRespond, getFirstResponseDelay } = require('../services/ai');
+const { generateResponse, shouldRespond, getResponseDelay } = require('../services/ai');
 const { calculateScore, checkPriorityFlag, getScoreColor } = require('../services/scoring');
 const { sendSMS, sendDelayedSMS } = require('../services/sms');
 const { detectAndCreateAppointment } = require('../services/appointmentDetector');
@@ -157,7 +157,8 @@ router.post('/:id/message', async (req, res) => {
         lead.priority = priorityResult.isPriority;
         lead.priorityReasons = priorityResult.reasons;
 
-        await sendSMS(lead.phone, aiResponse);
+        const delay = await getResponseDelay(45000);
+        await sendDelayedSMS(lead.phone, aiResponse, delay);
         // Appointment auto-detect karo
         await detectAndCreateAppointment(lead, aiResponse);
 
