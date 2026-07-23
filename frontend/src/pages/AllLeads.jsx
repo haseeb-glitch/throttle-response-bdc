@@ -4,7 +4,7 @@ import { leadsApi } from '../api/leads'
 import Sidebar from '../components/Sidebar'
 import Header from '../components/Header'
 import { timeAgo } from '../utils/helpers'
-import { Users, AlertCircle, Search, ChevronUp, ChevronDown } from 'lucide-react'
+import { Users, AlertCircle, Search, ChevronUp, ChevronDown, Trash2 } from 'lucide-react'
 
 function ScoreBadge({ score }) {
   const color = score >= 90 ? '#22C55E'
@@ -53,6 +53,19 @@ export default function AllLeads() {
   const handleSort = (key) => {
     if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
     else { setSortKey(key); setSortDir('desc') }
+  }
+
+  const handleDeleteLead = async (e, leadId) => {
+    e.stopPropagation()
+    if (!window.confirm('Delete this lead?')) return
+
+    try {
+      await leadsApi.delete(leadId)
+      setLeads(prev => prev.filter(lead => lead.id !== leadId))
+      setError(null)
+    } catch {
+      setError('Failed to delete lead.')
+    }
   }
 
   const priorityCount = leads.filter(l => l.priority).length
@@ -272,13 +285,23 @@ export default function AllLeads() {
 
                         {/* Action */}
                         <td style={{ padding: '14px 16px' }}>
-                          <button
-                            onClick={e => { e.stopPropagation(); navigate(`/lead/${lead.id}`) }}
-                            className="btn-ghost"
-                            style={{ fontSize: 12, padding: '4px 10px' }}
-                          >
-                            View →
-                          </button>
+                          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                            <button
+                              onClick={e => handleDeleteLead(e, lead.id)}
+                              className="btn-ghost"
+                              style={{ fontSize: 12, padding: '4px 10px', color: '#EF4444', borderColor: 'rgba(239,68,68,0.25)' }}
+                              title="Delete lead"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                            <button
+                              onClick={e => { e.stopPropagation(); navigate(`/lead/${lead.id}`) }}
+                              className="btn-ghost"
+                              style={{ fontSize: 12, padding: '4px 10px' }}
+                            >
+                              View →
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
