@@ -142,6 +142,16 @@ async function updateLead(id, updates) {
   return fromDbFormat(data);
 }
 
+async function deleteLead(id) {
+  const { error } = await supabase
+    .from('leads')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw error;
+  return true;
+}
+
 async function createAppointment(appointment) {
   const { data, error } = await supabase
     .from('appointments')
@@ -199,6 +209,7 @@ module.exports = {
   getLeadById,
   getLeadByPhone,
   updateLead,
+  deleteLead,
   createAppointment,
   getAllAppointments,
   updateAppointment,
